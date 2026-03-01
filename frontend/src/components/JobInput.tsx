@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Loader2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useFetchJobDescription } from "@/hooks/useFetchJobDescription";
 
 interface JobInputProps {
   jobDescription: string;
@@ -12,22 +13,28 @@ interface JobInputProps {
 
 const JobInput = ({ jobDescription, setJobDescription, onGenerate, isGenerating }: JobInputProps) => {
   const [url, setUrl] = useState("");
-  const [isFetching, setIsFetching] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const { toast } = useToast();
+  const { isFetching, fetchJobDescription } = useFetchJobDescription();
 
-  const handleFetch = () => {
-    if (!url.trim()) return;
-    setIsFetching(true);
-    setTimeout(() => {
-      setIsFetching(false);
+  const handleFetch = async () => {
+    const result = await fetchJobDescription(url);
+    
+    if (result.success) {
+      setJobDescription(result.description);
+      setShowManual(true);
+      toast({
+        title: "Job description fetched",
+        description: "Review and edit if needed.",
+      });
+    } else {
       setShowManual(true);
       toast({
         title: "Could not fetch URL",
-        description: "Please paste the description manually.",
+        description: "error" in result ? result.error : "Unknown error",
         variant: "destructive",
       });
-    }, 1000);
+    }
   };
 
   return (
@@ -55,7 +62,7 @@ const JobInput = ({ jobDescription, setJobDescription, onGenerate, isGenerating 
           className="font-mono text-xs shrink-0"
         >
           {isFetching ? <Loader2 size={14} className="animate-spin mr-1.5" /> : null}
-          {isFetching ? "Fetching..." : "Fetch"}
+          {isFetching ? "..." : "Fetch"}
         </Button>
       </div>
 
