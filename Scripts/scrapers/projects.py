@@ -7,13 +7,12 @@ except ImportError:
 
 POSITION_DATES = re.compile(
     r"^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} (?:-|to) "
-    r"(?:Present|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}) · .+$"
+    r"(?:Present|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4})(?: · .+)?$"
 )
 DATE_RANGE = re.compile(
     r"^((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}) (?:-|to) "
     r"(Present|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4})"
 )
-EMPLOYMENT = ("Internship", "Part-time", "Full-time", "Contract", "Freelance")
 
 
 def _bullets(text: str) -> list[str]:
@@ -29,26 +28,15 @@ def _skills(text: str) -> list[str]:
     return [s.strip() for s in text.split("Skills:", 1)[1].strip().split(" · ") if s.strip()]
 
 
-def _is_location(s: str) -> bool:
-    return ", United States" in s or s.endswith("United States")
-
-
-def parse_items(items: list[str]) -> list[dict]:
-    exps, company, i = [], items[0] if items else None, 0
-    
+def parse_project_items(items: list[str], links: list[str]) -> list[dict]:
+    projects, link_idx, i = [], 0, 0
     while i < len(items):
         item = items[i]
-        
         if POSITION_DATES.match(item) and i > 0:
-            prev = items[i - 1]
-            if " · " in prev and any(t in prev for t in EMPLOYMENT):
-                title, company = items[i - 2] if i >= 2 else prev, prev.split(" · ")[0].strip()
-            else: title = prev
-            
-            dates = DATE_RANGE.search(item)
-            start, end = dates.groups() if dates else (None, None)
-            desc, skills = None, []
-            
+            title = items[i - 1]
+            m = DATE_RANGE.search(item)
+            start, end = m.groups() if m else (None, None)
+            desc_parts, skills = [], []
             i += 1
             while i < len(items):
                 nxt = items[i]
@@ -58,26 +46,30 @@ def parse_items(items: list[str]) -> list[dict]:
                     break
                 if POSITION_DATES.match(nxt):
                     break
-                if not _is_location(nxt):
-                    desc = nxt
+                desc_parts.append(nxt)
                 i += 1
-                
-            exps.append({
-                "company": company,
+            desc = "\n\n".join(desc_parts) if desc_parts else None
+            link = links[link_idx] if link_idx < len(links) else None
+            link_idx += 1
+            projects.append({
                 "title": title,
+                "link": link,
                 "start": start,
                 "end": end,
                 "description": _bullets(desc) if desc else [],
                 "skills": skills,
             })
-            
             continue
         i += 1
-    return exps
+    return projects
 
 
-def scrape_experience(page: Page) -> list[dict]:
+def scrape_projects(page: Page) -> list[dict]:
+    links = [
+        a.get_attribute("href") or ""
+        for a in page.locator("main section li > a[href]").all()
+    ]
     items = [s.inner_text() for s in page.locator("main > section span[aria-hidden]").all()]
-    experiences = parse_items(items)
-    print(f"\nFound {len(experiences)} experience(s):\n")
-    return experiences
+    projects = parse_project_items(items, links)
+    print(f"\nFound {len(projects)} project(s):\n")
+    return projects

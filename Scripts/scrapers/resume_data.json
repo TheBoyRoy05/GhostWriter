@@ -95,5 +95,137 @@
       "description": [],
       "skills": []
     }
+  ],
+  "projects": [
+    {
+      "title": "Portfolio Website",
+      "link": "https://www.linkedin.com/in/issacroy/details/projects/1727651883209/single-media-viewer?type=LINK&profileId=ACoAAEvdfCABadZ7xKcrLQZzlgKbf0TOMw2q7bs",
+      "start": "Sep 2024",
+      "end": "Present",
+      "description": [
+        "Designed and developed my portfolio website utilizing React and React Three Fiber, featuring an engaging 3D Boids Simulation on the landing page. The site comprises eight pages, effectively showcasing my projects and skills. I invite you to explore my work and experience the interactive elements firsthand."
+      ],
+      "skills": [
+        "Git",
+        "User Interface Design",
+        "React.js",
+        "React Three Fiber",
+        "Tailwind CSS",
+        "TypeScript",
+        "Three.js"
+      ]
+    },
+    {
+      "title": "YipYap: The Chat App for Yappers",
+      "link": "https://www.linkedin.com/in/issacroy/details/projects/1727650974613/single-media-viewer?type=LINK&profileId=ACoAAEvdfCABadZ7xKcrLQZzlgKbf0TOMw2q7bs",
+      "start": "Aug 2024",
+      "end": "Present",
+      "description": [
+        "Designed and developed YipYap, a real-time chat application for \"Yappers\" - those who love to talk. YipYap includes features like AI-generated topic suggestions and personalized chat groups, aiming to foster more dynamic conversations.",
+        "Utilizing the MERN stack\u2014MongoDB, Express, React, and Node.js\u2014I implemented real-time communication through SocketIO. I enhanced state management with Zustand and improved the user interface using Tailwind CSS and DaisyUI. This project significantly advanced my skills in full-stack development, API creation, RESTful services, database management, and user authentication."
+      ],
+      "skills": [
+        "Node.js",
+        "Git",
+        "MongoDB",
+        "User Interface Design",
+        "React.js",
+        "API Development",
+        "JavaScript",
+        "Tailwind CSS",
+        "Express.js",
+        "TypeScript",
+        "Full-Stack Development",
+        "Artificial Intelligence (AI)",
+        "Figma (Software)"
+      ]
+    },
+    {
+      "title": "Sorting Visualizer",
+      "link": "https://www.linkedin.com/in/issacroy/details/projects/1727649693998/single-media-viewer?type=LINK&profileId=ACoAAEvdfCABadZ7xKcrLQZzlgKbf0TOMw2q7bs",
+      "start": "Jun 2024",
+      "end": "Jul 2024",
+      "description": [
+        "Developed a sorting algorithm visualizer for 7 different sorting algorithms to help beginners understand the mechanics of each. Implemented interactive features, allowing users to modify settings such as algorithm parallelization (e.g., Quicksort, Mergesort) and view performance metrics like time taken, swaps, and comparisons."
+      ],
+      "skills": [
+        "Data Structures",
+        "Git",
+        "Context API",
+        "React.js",
+        "Algorithms",
+        "TypeScript"
+      ]
+    },
+    {
+      "title": "Wave Simulation",
+      "link": "https://www.linkedin.com/in/issacroy/details/projects/1727649002600/single-media-viewer?type=LINK&profileId=ACoAAEvdfCABadZ7xKcrLQZzlgKbf0TOMw2q7bs",
+      "start": "Jun 2024",
+      "end": "Jun 2024",
+      "description": [
+        "Implemented 1D and 2D wave simulations using the Finite-Difference Method, applying Vector Calculus concepts for four distinct boundary conditions. Authored and published research findings in a Medium article, showcasing computational results and visualization."
+      ],
+      "skills": [
+        "Vector Calculus",
+        "Git",
+        "NumPy",
+        "Matplotlib",
+        "Finite Difference Method",
+        "Python"
+      ]
+    },
+    {
+      "title": "PyTorch Digit Recognizer",
+      "link": null,
+      "start": "Mar 2024",
+      "end": "Apr 2024",
+      "description": [
+        "Enhanced the previous digit recognizer by implementing the PyTorch library, boosting accuracy from 87% to 93% on the MNIST dataset. Reduced training time by 10x through optimization techniques and hyperparameter tuning to further improve model efficiency and performance."
+      ],
+      "skills": [
+        "Deep Learning",
+        "Matplotlib",
+        "Machine Learning",
+        "Pandas (Software)",
+        "PyTorch",
+        "Python"
+      ]
+    },
+    {
+      "title": "Dino Classifier",
+      "link": null,
+      "start": "Mar 2024",
+      "end": "Mar 2024",
+      "description": [
+        "Associated with UC San Diego",
+        "Ranked 3rd out of 30 teams at UCSD DataHacks by developing a machine learning model that predicts dinosaur traits such as lifespan and speed using modern animal data. Managed code collaboration with GitHub for version control, ensuring smooth teamwork and continuous integration.",
+        "Cleaned and visualized datasets using Pandas and Matplotlib to analyze dinosaur characteristics. Presented findings in a live demo, showcasing the model\u2019s practical applications and key insights for the competition audience."
+      ],
+      "skills": [
+        "Deep Learning",
+        "Matplotlib",
+        "GitHub",
+        "Pandas (Software)",
+        "PyTorch",
+        "Python"
+      ]
+    },
+    {
+      "title": "Digit Recognizer",
+      "link": null,
+      "start": "Dec 2023",
+      "end": "Jan 2024",
+      "description": [
+        "Built a handwritten digit recognizer from scratch using only Numpy, linear algebra, and multivariable calculus, achieving 87% accuracy on the MNIST dataset. Developed custom data visualizations to fine-tune hyperparameters and optimize model performance without relying on external machine learning libraries."
+      ],
+      "skills": [
+        "Deep Learning",
+        "NumPy",
+        "Multivariable Calculus",
+        "Linear Algebra",
+        "Machine Learning",
+        "Python"
+      ]
+    }
   ]
 }

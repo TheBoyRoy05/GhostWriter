@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright, Page
 
 from experience import scrape_experience
+from projects import scrape_projects
 
 load_dotenv(Path(__file__).parent.parent.parent / ".env")
 
@@ -40,6 +41,18 @@ def load_profile(page: Page) -> None:
     page.goto(LINKEDIN_URL, wait_until="domcontentloaded")
     page.wait_for_timeout(1000)
     print("Profile loaded.")
+    
+    
+def load_page_details(page: Page, url: str) -> None:
+    print(f"Navigating to experience details: {url}")
+    page.goto(url, wait_until="domcontentloaded")
+    page.wait_for_timeout(2000)
+    print("Scrolling to load lazy content...")
+    page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+    page.wait_for_timeout(2000)
+    page.evaluate("window.scrollTo(0, 0)")
+    page.wait_for_timeout(500)
+    print("Page details loaded.")
 
 
 def main():
@@ -59,12 +72,18 @@ def main():
             load_profile(page)
             
             experience_url = LINKEDIN_URL.rstrip("/") + "/details/experience/"
-            experiences = scrape_experience(page, experience_url)
+            load_page_details(page, experience_url)
+            experiences = scrape_experience(page)
+            page.go_back()
+            
+            projects_url = LINKEDIN_URL.rstrip("/") + "/details/projects/"
+            load_page_details(page, projects_url)
+            projects = scrape_projects(page)
+            page.go_back()
         finally:
             browser.close()
 
-    print(f"\nFound {len(experiences)} experience(s):\n")
-    resume_data = {"experiences": experiences}
+    resume_data = {"experiences": experiences, "projects": projects}
 
     output_path = Path(__file__).parent / "resume_data.json"
     with open(output_path, "w", encoding="utf-8") as f:
