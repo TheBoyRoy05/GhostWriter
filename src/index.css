@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 220 20% 7%;
+    --foreground: 210 20% 90%;
+
+    --card: 220 18% 10%;
+    --card-foreground: 210 20% 90%;
+
+    --popover: 220 18% 10%;
+    --popover-foreground: 210 20% 90%;
+
+    --primary: 142 60% 55%;
+    --primary-foreground: 220 20% 7%;
+
+    --secondary: 220 16% 16%;
+    --secondary-foreground: 210 20% 80%;
+
+    --muted: 220 14% 14%;
+    --muted-foreground: 215 12% 50%;
+
+    --accent: 142 60% 55%;
+    --accent-foreground: 220 20% 7%;
+
+    --destructive: 0 62% 55%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 14% 18%;
+    --input: 220 14% 18%;
+    --ring: 142 60% 55%;
+
+    --radius: 0.5rem;
+
+    --terminal-green: 142 60% 55%;
+    --terminal-amber: 40 90% 60%;
+    --terminal-cyan: 185 70% 55%;
+    --terminal-dim: 215 12% 35%;
+
+    --sidebar-background: 220 18% 10%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 142 60% 55%;
+    --sidebar-primary-foreground: 220 20% 7%;
+    --sidebar-accent: 220 14% 14%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 220 14% 18%;
+    --sidebar-ring: 142 60% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace !important;
+  }
+}
+
+@layer utilities {
+  .glow-green {
+    box-shadow: 0 0 20px hsl(142 60% 55% / 0.15), 0 0 60px hsl(142 60% 55% / 0.05);
+  }
+
+  .glow-green-text {
+    text-shadow: 0 0 10px hsl(142 60% 55% / 0.5);
+  }
+
+  .terminal-border {
+    border: 1px solid hsl(220 14% 18%);
+    position: relative;
+  }
+
+  .terminal-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid hsl(142 60% 55% / 0.08);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .scanline {
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsl(142 60% 55% / 0.015) 2px,
+      hsl(142 60% 55% / 0.015) 4px
+    );
+  }
+}
