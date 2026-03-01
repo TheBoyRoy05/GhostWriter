@@ -28,6 +28,19 @@ def _skills(text: str) -> list[str]:
     return [s.strip() for s in text.split("Skills:", 1)[1].strip().split(" · ") if s.strip()]
 
 
+def _get_project_links(page: Page) -> list[str]:
+    links = []
+    modal_triggers = page.locator("main section li > a[href]").all()
+    for trigger in modal_triggers:
+        trigger.click()
+        view_link = page.get_by_role("link", name="View").first
+        view_link.wait_for(state="visible", timeout=5000)
+        links.append(view_link.get_attribute("href") or "")
+        page.locator('button[aria-label="Dismiss"]').click()
+        page.wait_for_timeout(300)
+    return links
+
+
 def parse_project_items(items: list[str], links: list[str]) -> list[dict]:
     projects, link_idx, i = [], 0, 0
     while i < len(items):
@@ -65,10 +78,7 @@ def parse_project_items(items: list[str], links: list[str]) -> list[dict]:
 
 
 def scrape_projects(page: Page) -> list[dict]:
-    links = [
-        a.get_attribute("href") or ""
-        for a in page.locator("main section li > a[href]").all()
-    ]
+    links = _get_project_links(page)
     items = [s.inner_text() for s in page.locator("main > section span[aria-hidden]").all()]
     projects = parse_project_items(items, links)
     print(f"\nFound {len(projects)} project(s):\n")

@@ -2,7 +2,7 @@
   "experiences": [
     {
       "company": "Data Science Student Society at UC San Diego",
-      "title": "Director of Software",
+      "title": "Software Lead",
       "start": "May 2025",
       "end": "Present",
       "description": [
@@ -99,7 +99,7 @@
   "projects": [
     {
       "title": "Portfolio Website",
-      "link": "https://www.linkedin.com/in/issacroy/details/projects/1727651883209/single-media-viewer?type=LINK&profileId=ACoAAEvdfCABadZ7xKcrLQZzlgKbf0TOMw2q7bs",
+      "link": "https://issacroy.com/",
       "start": "Sep 2024",
       "end": "Present",
       "description": [
@@ -117,7 +117,7 @@
     },
     {
       "title": "YipYap: The Chat App for Yappers",
-      "link": "https://www.linkedin.com/in/issacroy/details/projects/1727650974613/single-media-viewer?type=LINK&profileId=ACoAAEvdfCABadZ7xKcrLQZzlgKbf0TOMw2q7bs",
+      "link": "https://yipyap.onrender.com/",
       "start": "Aug 2024",
       "end": "Present",
       "description": [
@@ -142,7 +142,7 @@
     },
     {
       "title": "Sorting Visualizer",
-      "link": "https://www.linkedin.com/in/issacroy/details/projects/1727649693998/single-media-viewer?type=LINK&profileId=ACoAAEvdfCABadZ7xKcrLQZzlgKbf0TOMw2q7bs",
+      "link": "https://theboyroy05.github.io/Sorting-Visualizer/",
       "start": "Jun 2024",
       "end": "Jul 2024",
       "description": [
@@ -159,7 +159,7 @@
     },
     {
       "title": "Wave Simulation",
-      "link": "https://www.linkedin.com/in/issacroy/details/projects/1727649002600/single-media-viewer?type=LINK&profileId=ACoAAEvdfCABadZ7xKcrLQZzlgKbf0TOMw2q7bs",
+      "link": "https://medium.com/@issacroy05/a-simple-wave-simulation-35bee02c172b",
       "start": "Jun 2024",
       "end": "Jun 2024",
       "description": [
