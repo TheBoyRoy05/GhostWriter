@@ -1,0 +1,99 @@
+{
+  "experiences": [
+    {
+      "company": "Data Science Student Society at UC San Diego",
+      "title": "Director of Software",
+      "start": "May 2025",
+      "end": "Present",
+      "description": [
+        "Leading a team of developers in designing and building full-stack websites for UC San Diego student organizations, using modern web technologies and agile practices.",
+        "Organize and deliver workshops on essential software engineering topics, including frontend frameworks, backend architecture, Git/GitHub, containerization, and cloud computing, to help students gain hands-on experience and develop industry-ready skills."
+      ],
+      "skills": [
+        "Leadership",
+        "React",
+        "TypeScript",
+        "Full-Stack Development",
+        "Agile Methodologies"
+      ]
+    },
+    {
+      "company": "Data Science Student Society at UC San Diego",
+      "title": "Software Developer",
+      "start": "Sep 2024",
+      "end": "May 2025",
+      "description": [
+        "Built responsive frontend features for club websites using React.",
+        "Led a workshop on developing a personal portfolio site, guiding students through design, layout, and deployment best practices.",
+        "Collaborated with a cross-functional team to deliver clean, user-friendly interfaces for student organizations"
+      ],
+      "skills": [
+        "React",
+        "TypeScript",
+        "Front-End Development",
+        "Front-End Design",
+        "Responsive Web Design"
+      ]
+    },
+    {
+      "company": "Neurocrine Biosciences",
+      "title": "Data Engineer Intern",
+      "start": "Jun 2025",
+      "end": "Sep 2025",
+      "description": [
+        "Deployed containerized cloud-based web scraper to save $200k+ in operating expenses",
+        "Operationalized AI models to transform patient data into study-specific narratives",
+        "Deployed scalable data pipelines with AWS serverless functions and Power BI dashboards"
+      ],
+      "skills": [
+        "Amazon Web Services (AWS)",
+        "Cloud Computing",
+        "Terraform",
+        "PowerBI",
+        "Docker"
+      ]
+    },
+    {
+      "company": "San Diego County Taxpayers Association",
+      "title": "Data Science Intern",
+      "start": "Oct 2024",
+      "end": "Jan 2025",
+      "description": [
+        "Implementing a social media web scraper to gather data to perform sentiment analysis on current county policies. The goal is to make a public tool for SD Taxpayers and policymakers to see sentiments towards certain policies."
+      ],
+      "skills": [
+        "Statistics",
+        "Data Analytics",
+        "Web Scraping",
+        "Selenium",
+        "Python"
+      ]
+    },
+    {
+      "company": "theCoderSchool",
+      "title": "Code Coach",
+      "start": "Jun 2024",
+      "end": "Oct 2024",
+      "description": [
+        "Led 4 week-long summer camps, teaching Python fundamentals to over 50 students ages 6\u201317 through hands-on projects and games.",
+        "Provided 1-on-1 tutoring in Lua for Roblox game development, helping students apply programming concepts to interactive, real-world applications.",
+        "Fostered a fun and supportive learning environment that encouraged curiosity, problem-solving, and creativity in young coders."
+      ],
+      "skills": [
+        "Python",
+        "Leadership",
+        "Tutoring",
+        "Teaching",
+        "Lua"
+      ]
+    },
+    {
+      "company": "Mathnasium - The Math Learning Center",
+      "title": "Mathematics Tutor",
+      "start": "Jul 2022",
+      "end": "Jun 2024",
+      "description": [],
+      "skills": []
+    }
+  ]
+}
