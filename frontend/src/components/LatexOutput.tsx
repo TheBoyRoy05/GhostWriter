@@ -59,7 +59,7 @@ const LatexOutput = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "resume_overfitted.tex";
+    a.download = "resume_tailored.tex";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -76,7 +76,7 @@ const LatexOutput = () => {
         <div className="flex items-center justify-between border-b border-border px-4 py-2 bg-secondary/50">
           <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
             <FileText size={12} />
-            resume_overfitted.tex
+            resume_tailored.tex
           </div>
           <div className="flex items-center gap-1.5">
             <Button

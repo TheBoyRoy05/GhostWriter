@@ -1,8 +1,8 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { initDevAuth } from "./utils/initDevAuth";
+import { useAuthStore } from "./stores/authStore";
 
-initDevAuth().then(() => {
-  createRoot(document.getElementById("root")!).render(<App />);
-});
+useAuthStore.getState().init();
+
+createRoot(document.getElementById("root")!).render(<App />);

@@ -99,7 +99,7 @@ const JobInput = ({ jobDescription, setJobDescription, onGenerate, isGenerating 
             Compiling LaTeX...
           </>
         ) : (
-          "Generate Overfitted Resume"
+          "Generate Tailored Resume"
         )}
       </Button>
     </div>

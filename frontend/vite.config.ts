@@ -6,7 +6,7 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   envDir: path.resolve(__dirname, ".."),
-  base: "/Overfit/",
+  base: "/ResumeEngine/",
   server: {
     host: "::",
     port: 8080,
