@@ -7,6 +7,8 @@ export interface Profile {
   email: string | null;
   phone: string | null;
   hobbies: string | null;
+  location: string | null;
+  citizenship: boolean | null;
   resume?: unknown;
   created_at: string;
   updated_at: string;
@@ -19,5 +21,7 @@ export interface SignUpProfileInput {
   linkedin: string;
   email: string;
   phone: string;
-  hobbies: string; // comma-separated
+  hobbies: string;
+  location: string;
+  citizenship: boolean | null;
 }

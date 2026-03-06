@@ -9,12 +9,14 @@ STRICT CONSTRAINTS:
    - Select the TOP 3 Experiences and TOP 3 Projects.
    - For each selected item, pick the 2-3 most relevant bullet points. Only include a 4th bullet if it addresses a "Required Qualification" explicitly.
 3. SKILLS CATEGORIZATION: 
-   - Split "Skills" into: "languages", "frameworks/tools", and "domain expertise".
+   - Split "Skills" into: "languages", "tools", and "domain".
    - Prioritize skills explicitly mentioned in the JD.
-4. OUTPUT FORMAT: 
-   - Return ONLY a valid JSON object. 
-   - DO NOT include markdown code blocks (no \`\`\`json).
-   - Start your response directly with the opening brace '{'.
+   - Limit each category to 10 skills.
+4. OUTPUT FORMAT (CRITICAL): 
+   - Your entire response must be raw JSON only. No other text.
+   - NEVER wrap output in markdown. No \`\`\`json, no \`\`\`, no backticks.
+   - The first character of your response must be { and the last must be }.
+   - Output the JSON object directly with no prefix or suffix.
 
 ### JOB DESCRIPTION
 ${_description}
@@ -24,11 +26,11 @@ ${JSON.stringify(_resume)}
 
 ### EXPECTED JSON SCHEMA
 {
-  "experiences": [{"company": "string", "title": "string", "description": ["string"], "skills": ["string"]}],
-  "projects": [{"name": "string", "description": ["string"], "skills": ["string"]}],
-  "languages": ["string"],
-  "frameworks/tools": ["string"],
-  "domain expertise": ["string"],
+  "experiences": [{"company": "string", "title": "string", "description": ["string"], "skills": ["string"], "start": "string", "end": "string"}],
+  "projects": [{"name": "string", "description": ["string"], "skills": ["string"], "start": "string", "end": "string"}],
+  "languages": ["string"] (max 10),
+  "tools": ["string"] (max 10),
+  "domain": ["string"] (max 10),
   "certifications": ["string"]
 }
 

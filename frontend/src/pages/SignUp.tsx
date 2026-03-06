@@ -23,6 +23,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 const signUpSchema = z
@@ -45,6 +52,8 @@ const signUpSchema = z
     profile_email: z.union([z.string().email(), z.literal("")]).optional(),
     phone: z.string().optional(),
     hobbies: z.string().optional(),
+    location: z.string().optional(),
+    citizenship: z.enum(["yes", "no", ""]).optional(),
   })
   .refine((data) => data.password === data.confirm_password, {
     message: "Passwords do not match",
@@ -72,6 +81,8 @@ const SignUp = () => {
       profile_email: "",
       phone: "",
       hobbies: "",
+      location: "",
+      citizenship: "",
     },
   });
 
@@ -85,6 +96,8 @@ const SignUp = () => {
       email: values.profile_email ?? values.email,
       phone: values.phone ?? "",
       hobbies: values.hobbies ?? "",
+      location: values.location ?? "",
+      citizenship: values.citizenship === "yes" ? true : values.citizenship === "no" ? false : null,
     });
     setIsSubmitting(false);
 
@@ -171,14 +184,14 @@ const SignUp = () => {
                 />
                 <FormField
                   control={form.control}
-                  name="personal_website"
+                  name="linkedin"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Personal website</FormLabel>
+                      <FormLabel>LinkedIn *</FormLabel>
                       <FormControl>
                         <Input
                           type="url"
-                          placeholder="https://example.com"
+                          placeholder="https://linkedin.com/in/username"
                           {...field}
                         />
                       </FormControl>
@@ -205,14 +218,14 @@ const SignUp = () => {
                 />
                 <FormField
                   control={form.control}
-                  name="linkedin"
+                  name="personal_website"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>LinkedIn *</FormLabel>
+                      <FormLabel>Personal website</FormLabel>
                       <FormControl>
                         <Input
                           type="url"
-                          placeholder="https://linkedin.com/in/username"
+                          placeholder="https://example.com"
                           {...field}
                         />
                       </FormControl>
@@ -246,9 +259,43 @@ const SignUp = () => {
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
-                        Optional. Leave empty to use auth email.
-                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="location"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Location</FormLabel>
+                      <FormControl>
+                        <Input placeholder="San Diego, CA" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="citizenship"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>U.S. Citizenship</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || undefined}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="yes">U.S. Citizen</SelectItem>
+                          <SelectItem value="no">Not a U.S. Citizen</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -258,16 +305,13 @@ const SignUp = () => {
                   name="hobbies"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Hobbies</FormLabel>
+                      <FormLabel>Hobbies (comma-separated list)</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="hiking, photography, chess"
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
-                        Comma-separated list
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

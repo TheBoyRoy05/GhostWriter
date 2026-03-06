@@ -24,6 +24,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 
@@ -43,6 +50,8 @@ const profileSchema = z.object({
   profile_email: z.union([z.string().email(), z.literal("")]).optional(),
   phone: z.string().optional(),
   hobbies: z.string().optional(),
+  location: z.string().optional(),
+  citizenship: z.enum(["yes", "no", ""]).optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -65,6 +74,8 @@ const Profile = () => {
       profile_email: "",
       phone: "",
       hobbies: "",
+      location: "",
+      citizenship: "",
     },
   });
 
@@ -78,6 +89,9 @@ const Profile = () => {
         profile_email: profile?.email ?? user?.email ?? "",
         phone: profile?.phone ?? "",
         hobbies: profile?.hobbies ?? "",
+        location: profile?.location ?? "",
+        citizenship:
+          profile?.citizenship === true ? "yes" : profile?.citizenship === false ? "no" : "",
       });
     }
   }, [profile, user]);
@@ -89,7 +103,9 @@ const Profile = () => {
   }, [user, loading, navigate]);
 
   const connectExtension = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     const linkedinUrl = form.getValues("linkedin") || profile?.linkedin;
     if (!session || !supabaseUrl || !supabaseAnonKey) {
       toast({
@@ -118,14 +134,17 @@ const Profile = () => {
         supabaseAnonKey,
         linkedin: normalizedLinkedin,
       },
-      "*"
+      "*",
     );
     window.addEventListener(
       "message",
       (e) => {
         if (e.data?.type === "RESUME_ENGINE_CONNECTED") {
           if (e.data.success) {
-            toast({ title: "Extension connected", description: "You can now scrape your LinkedIn profile." });
+            toast({
+              title: "Extension connected",
+              description: "You can now scrape your LinkedIn profile.",
+            });
           } else {
             toast({
               title: "Connection failed",
@@ -135,9 +154,12 @@ const Profile = () => {
           }
         }
       },
-      { once: true }
+      { once: true },
     );
-    toast({ title: "Connecting...", description: "If the extension is installed, it should connect." });
+    toast({
+      title: "Connecting...",
+      description: "If the extension is installed, it should connect.",
+    });
   };
 
   const onSubmit = async (values: ProfileFormValues) => {
@@ -149,6 +171,8 @@ const Profile = () => {
       email: values.profile_email ?? user?.email ?? "",
       phone: values.phone ?? "",
       hobbies: values.hobbies ?? "",
+      location: values.location ?? "",
+      citizenship: values.citizenship === "yes" ? true : values.citizenship === "no" ? false : null,
     });
 
     if (error) {
@@ -201,24 +225,19 @@ const Profile = () => {
                   <FormItem>
                     <FormLabel>Auth email (cannot be changed)</FormLabel>
                     <FormControl>
-                      <Input
-                        type="email"
-                        value={user.email ?? ""}
-                        disabled
-                        className="bg-muted"
-                      />
+                      <Input type="email" value={user.email ?? ""} disabled className="bg-muted" />
                     </FormControl>
                   </FormItem>
                   <FormField
                     control={form.control}
-                    name="personal_website"
+                    name="linkedin"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Personal website</FormLabel>
+                        <FormLabel>LinkedIn *</FormLabel>
                         <FormControl>
                           <Input
                             type="url"
-                            placeholder="https://example.com"
+                            placeholder="https://linkedin.com/in/username"
                             {...field}
                           />
                         </FormControl>
@@ -233,11 +252,7 @@ const Profile = () => {
                       <FormItem>
                         <FormLabel>GitHub</FormLabel>
                         <FormControl>
-                          <Input
-                            type="url"
-                            placeholder="https://github.com/username"
-                            {...field}
-                          />
+                          <Input type="url" placeholder="https://github.com/username" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -245,16 +260,12 @@ const Profile = () => {
                   />
                   <FormField
                     control={form.control}
-                    name="linkedin"
+                    name="personal_website"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>LinkedIn *</FormLabel>
+                        <FormLabel>Personal website</FormLabel>
                         <FormControl>
-                          <Input
-                            type="url"
-                            placeholder="https://linkedin.com/in/username"
-                            {...field}
-                          />
+                          <Input type="url" placeholder="https://example.com" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -280,15 +291,43 @@ const Profile = () => {
                       <FormItem className="col-span-2">
                         <FormLabel>Contact email</FormLabel>
                         <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="contact@example.com"
-                            {...field}
-                          />
+                          <Input type="email" placeholder="contact@example.com" {...field} />
                         </FormControl>
-                        <FormDescription>
-                          Optional. Leave empty to use auth email.
-                        </FormDescription>
+                        <FormDescription>Optional. Leave empty to use auth email.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Location</FormLabel>
+                        <FormControl>
+                          <Input placeholder="San Diego, CA" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="citizenship"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>U.S. Citizenship</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || undefined}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select..." />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="yes">U.S. Citizen</SelectItem>
+                            <SelectItem value="no">Not a U.S. Citizen</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -298,16 +337,10 @@ const Profile = () => {
                     name="hobbies"
                     render={({ field }) => (
                       <FormItem className="col-span-2">
-                        <FormLabel>Hobbies</FormLabel>
+                        <FormLabel>Hobbies (comma-separated list)</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="hiking, photography, chess"
-                            {...field}
-                          />
+                          <Input placeholder="hiking, photography, chess" {...field} />
                         </FormControl>
-                        <FormDescription>
-                          Comma-separated list
-                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -321,9 +354,15 @@ const Profile = () => {
                 <div className="w-full border-t pt-4">
                   <p className="text-sm font-medium mb-2">Browser Extension</p>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Connect the Resume Engine extension to scrape your LinkedIn profile and save it here.
+                    Connect the Resume Engine extension to scrape your LinkedIn profile and save it
+                    here.
                   </p>
-                  <Button type="button" variant="outline" className="w-full" onClick={connectExtension}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={connectExtension}
+                  >
                     Connect Extension
                   </Button>
                 </div>

@@ -15,6 +15,8 @@ function profileFromUserMetadata(user: User | null): Profile | null {
     email: m.email ?? null,
     phone: m.phone ?? null,
     hobbies: m.hobbies ?? null,
+    location: m.location ?? null,
+    citizenship: m.citizenship ?? null,
     resume: m.resume ?? undefined,
     created_at: user.created_at,
     updated_at: user.updated_at ?? user.created_at,
@@ -29,6 +31,8 @@ interface ProfileInput {
   email: string;
   phone: string;
   hobbies: string;
+  location: string;
+  citizenship: boolean | null;
 }
 
 export interface ResumeData {
@@ -77,6 +81,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
           email: profileData.email || null,
           phone: profileData.phone || null,
           hobbies: profileData.hobbies || null,
+          location: profileData.location || null,
+          citizenship: profileData.citizenship ?? null,
         },
       },
     });
@@ -98,6 +104,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
         email: profileData.email || null,
         phone: profileData.phone || null,
         hobbies: profileData.hobbies || null,
+        location: profileData.location || null,
+        citizenship: profileData.citizenship ?? null,
       },
     });
     if (!error && user) {

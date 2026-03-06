@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Copy, Download, FileText, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MOCK_LATEX } from "@/lib/mock-latex";
-
-const KEYWORDS = ["\\\\documentclass", "\\\\usepackage", "\\\\begin", "\\\\end", "\\\\section", "\\\\textbf", "\\\\textit", "\\\\item", "\\\\href", "\\\\titleformat", "\\\\setlength", "\\\\LARGE", "\\\\bfseries", "\\\\titlerule", "\\\\hfill", "\\\\quad", "\\\\\\\\"];
+import { buildLatexFromMatcherResult, type MatcherJsonResult } from "@/lib/latex-builder";
+import type { MatcherResult } from "@/pages/Index";
+import type { Profile } from "@/types/profile";
 
 const highlightLatex = (code: string) => {
   const lines = code.split("\n");
@@ -45,17 +45,42 @@ const highlightLatex = (code: string) => {
   });
 };
 
-const LatexOutput = () => {
+function parseJobTitle(jobDescription: string): string | null {
+  const match = jobDescription.match(/^Job Title:\s*(.+?)(?:\n\n|$)/s);
+  return match ? match[1].trim() : null;
+}
+
+interface LatexOutputProps {
+  matcherResult: MatcherResult | null;
+  profile: Profile | null;
+  jobDescription?: string;
+}
+
+const LatexOutput = ({ matcherResult, profile, jobDescription = "" }: LatexOutputProps) => {
   const [copied, setCopied] = useState(false);
 
+  const latexContent = useMemo(() => {
+    if (!matcherResult?.result) {
+      return "% Run Generate to create a tailored resume";
+    }
+    try {
+      const parsed = JSON.parse(matcherResult.result) as MatcherJsonResult;
+      const resume = profile?.resume as { education?: Array<{ school?: string; degree?: string; start?: string; end?: string; grade?: string | null }> } | undefined;
+      const jobTitle = parseJobTitle(jobDescription);
+      return buildLatexFromMatcherResult(parsed, profile, resume, jobTitle);
+    } catch {
+      return "% Failed to parse matcher result";
+    }
+  }, [matcherResult, profile, jobDescription]);
+
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(MOCK_LATEX);
+    await navigator.clipboard.writeText(latexContent);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
-    const blob = new Blob([MOCK_LATEX], { type: "text/plain" });
+    const blob = new Blob([latexContent], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -110,9 +135,13 @@ const LatexOutput = () => {
 
         {/* Code block */}
         <div className="p-4 overflow-x-auto max-h-[500px] overflow-y-auto scanline">
-          <pre className="text-xs font-mono leading-5 text-foreground/90">
-            {highlightLatex(MOCK_LATEX)}
-          </pre>
+          {matcherResult?.error ? (
+            <p className="text-xs font-mono text-destructive">{matcherResult.error}</p>
+          ) : (
+            <pre className="text-xs font-mono leading-5 text-foreground/90">
+              {highlightLatex(latexContent)}
+            </pre>
+          )}
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Link as LinkIcon, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useFetchJobDescription } from "@/hooks/useFetchJobDescription";
@@ -9,6 +10,7 @@ interface JobInputProps {
   setJobDescription: (v: string) => void;
   onGenerate: () => void;
   isGenerating: boolean;
+  hasResume?: boolean;
 }
 
 function isValidJobUrl(url: string): boolean {
@@ -28,7 +30,7 @@ function isValidJobUrl(url: string): boolean {
   }
 }
 
-const JobInput = ({ jobDescription, setJobDescription, onGenerate, isGenerating }: JobInputProps) => {
+const JobInput = ({ jobDescription, setJobDescription, onGenerate, isGenerating, hasResume = true }: JobInputProps) => {
   const [url, setUrl] = useState("");
   const [showManual, setShowManual] = useState(false);
   const { toast } = useToast();
@@ -39,11 +41,14 @@ const JobInput = ({ jobDescription, setJobDescription, onGenerate, isGenerating 
     const result = await fetchJobDescription(url);
     
     if (result.success) {
-      setJobDescription(result.description);
+      const text = result.title
+        ? `Job Title: ${result.title}\n\n${result.description}`
+        : result.description;
+      setJobDescription(text);
       setShowManual(true);
       toast({
         title: "Job description fetched",
-        description: "Review and edit if needed.",
+        description: result.title ? `${result.title} — review and edit if needed.` : "Review and edit if needed.",
       });
     } else {
       setShowManual(true);
@@ -64,7 +69,7 @@ const JobInput = ({ jobDescription, setJobDescription, onGenerate, isGenerating 
 
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Link size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <LinkIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             value={url}
@@ -117,7 +122,7 @@ const JobInput = ({ jobDescription, setJobDescription, onGenerate, isGenerating 
 
       <Button
         onClick={onGenerate}
-        disabled={isGenerating || jobDescription.trim().length < 200}
+        disabled={isGenerating || jobDescription.trim().length < 200 || !hasResume}
         className="w-full font-mono text-sm mt-2 glow-green"
       >
         {isGenerating ? (
@@ -129,6 +134,14 @@ const JobInput = ({ jobDescription, setJobDescription, onGenerate, isGenerating 
           "Generate Tailored Resume"
         )}
       </Button>
+      {!hasResume && (
+        <p className="text-xs text-muted-foreground mt-2">
+          Add your resume via the LinkedIn scraper first.{" "}
+          <Link to="/profile" className="text-primary hover:underline">
+            Go to Profile → Connect Extension
+          </Link>
+        </p>
+      )}
     </div>
   );
 };

@@ -21,24 +21,26 @@ function getJobBoardProvider(url: string): JobBoardProvider {
   return "unknown";
 }
 
-function extractWorkdayDescription(html: string): string | null {
+function extractFromHtml(html: string): { description: string | null; title: string | null } {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
-  const meta = doc.querySelector('meta[name="description"]');
-  return meta?.getAttribute("content")?.trim() ?? null;
+  const description = doc.querySelector('meta[name="description"]')?.getAttribute("content")?.trim() ?? null;
+  const title = doc.querySelector('meta[name="title"]')?.getAttribute("content")?.trim() ?? null;
+  return { description, title };
 }
 
-function extractDescription(html: string, provider: JobBoardProvider): string | null {
+function extractJobData(html: string, provider: JobBoardProvider): { description: string | null; title: string | null } {
+  const { description, title } = extractFromHtml(html);
   switch (provider) {
     case "workday":
-      return extractWorkdayDescription(html);
+      return { description, title };
     default:
-      return null;
+      return { description: null, title: null };
   }
 }
 
 export type FetchResult =
-  | { success: true; description: string }
+  | { success: true; description: string; title: string | null }
   | { success: false; error: string };
 
 export interface UseFetchJobDescriptionResult {
@@ -85,7 +87,7 @@ export function useFetchJobDescription(): UseFetchJobDescriptionResult {
       const html = await res.text();
       console.log("[useFetchJobDescription] html length:", html.length, "chars");
 
-      const description = extractDescription(html, provider);
+      const { description, title } = extractJobData(html, provider);
 
       if (!description) {
         const parser = new DOMParser();
@@ -100,7 +102,7 @@ export function useFetchJobDescription(): UseFetchJobDescriptionResult {
         };
       }
 
-      return { success: true, description };
+      return { success: true, description, title };
     } catch (err) {
       console.error("[useFetchJobDescription] fetch error:", err);
       const message = err instanceof Error ? err.message : "Failed to fetch URL";
