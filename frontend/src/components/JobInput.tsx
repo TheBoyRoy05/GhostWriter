@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link as LinkIcon, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useFetchJobDescription } from "@/hooks/useFetchJobDescription";
+import { parseJobUrl, parseHourlyRange, formatHourlyRange } from "@/lib/job-url";
+import useRoleStore from "@/stores/roleStore";
 
 interface JobInputProps {
-  jobDescription: string;
-  setJobDescription: (v: string) => void;
   onGenerate: () => void;
   isGenerating: boolean;
   hasResume?: boolean;
@@ -30,25 +33,37 @@ function isValidJobUrl(url: string): boolean {
   }
 }
 
-const JobInput = ({ jobDescription, setJobDescription, onGenerate, isGenerating, hasResume = true }: JobInputProps) => {
-  const [url, setUrl] = useState("");
+const JobInput = ({ onGenerate, isGenerating, hasResume = true }: JobInputProps) => {
+  const role = useRoleStore();
   const [showManual, setShowManual] = useState(false);
   const { toast } = useToast();
+
   const { isFetching, fetchJobDescription } = useFetchJobDescription();
-  const hasValidLink = isValidJobUrl(url);
+
+  // Sync parsed company/roleId when link changes (company displayed without underscores)
+  useEffect(() => {
+    const { company: c, roleId: r } = parseJobUrl(role.link);
+    role.setCompany(c.replace(/_/g, " "));
+    role.setRoleId(r);
+  }, [role.link, role.role]);
+  const hasValidLink = isValidJobUrl(role.link);
 
   const handleFetch = async () => {
-    const result = await fetchJobDescription(url);
-    
+    const result = await fetchJobDescription(role.link);
+
     if (result.success) {
       const text = result.title
         ? `Job Title: ${result.title}\n\n${result.description}`
         : result.description;
-      setJobDescription(text);
+      role.setDescription(text);
+      if (result.title) role.setRole(result.title);
+      role.setHourlyRange(result.hourly_range ?? null);
       setShowManual(true);
       toast({
         title: "Job description fetched",
-        description: result.title ? `${result.title} — review and edit if needed.` : "Review and edit if needed.",
+        description: result.title
+          ? `${result.title} — review and edit if needed.`
+          : "Review and edit if needed.",
       });
     } else {
       setShowManual(true);
@@ -69,11 +84,14 @@ const JobInput = ({ jobDescription, setJobDescription, onGenerate, isGenerating,
 
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <LinkIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <LinkIcon
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
           <input
             type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            value={role.link}
+            onChange={(e) => role.setLink(e.target.value)}
             placeholder="Paste job posting URL here..."
             className="w-full rounded-md border border-input bg-secondary pl-10 pr-4 py-2.5 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors"
           />
@@ -110,19 +128,63 @@ const JobInput = ({ jobDescription, setJobDescription, onGenerate, isGenerating,
               Collapse
             </button>
           </div>
-          <textarea
-            value={jobDescription}
-            onChange={(e) => setJobDescription(e.target.value)}
-            rows={8}
-            placeholder="Paste the full job description here..."
-            className="w-full rounded-md border border-input bg-secondary p-4 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors resize-y leading-relaxed"
-          />
+          {/* Parsed job info - editable for storage path */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label className="text-xs font-mono text-muted-foreground">Company</Label>
+              <Input
+                value={role.company}
+                onChange={(e) => role.setCompany(e.target.value)}
+                placeholder="unknown"
+                className="font-mono text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-mono text-muted-foreground">Role Title</Label>
+              <Input
+                value={role.role}
+                onChange={(e) => role.setRole(e.target.value)}
+                placeholder="e.g. Software Engineering Intern"
+                className="font-mono text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-mono text-muted-foreground">Hourly Range</Label>
+              <Input
+                value={formatHourlyRange(role.hourly_range)}
+                onChange={(e) =>
+                  role.setHourlyRange(parseHourlyRange(e.target.value, { allowPlainNumbers: true }))
+                }
+                placeholder="e.g. 25 - 35"
+                className="font-mono text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-mono text-muted-foreground">Role ID</Label>
+              <Input
+                value={role.roleId}
+                onChange={(e) => role.setRoleId(e.target.value)}
+                placeholder="manual"
+                className="font-mono text-sm"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-mono text-muted-foreground">Job Description</Label>
+            <Textarea
+              value={role.description}
+              onChange={(e) => role.setDescription(e.target.value)}
+              rows={8}
+              placeholder="Paste the full job description here..."
+              className="font-mono resize-y leading-relaxed"
+            />
+          </div>
         </div>
       )}
 
       <Button
         onClick={onGenerate}
-        disabled={isGenerating || jobDescription.trim().length < 200 || !hasResume}
+        disabled={isGenerating || role.description.trim().length < 200 || !hasResume}
         className="w-full font-mono text-sm mt-2 glow-green"
       >
         {isGenerating ? (

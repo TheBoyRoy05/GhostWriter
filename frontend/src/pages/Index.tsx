@@ -2,8 +2,9 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import JobInput from "@/components/JobInput";
 import LatexOutput from "@/components/LatexOutput";
-import { supabase, supabaseUrl, supabaseAnonKey } from "@/utils/supabase";
+import { supabaseUrl, supabaseAnonKey } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
+import useRoleStore from "@/stores/roleStore";
 import { useToast } from "@/hooks/use-toast";
 
 export interface MatcherResult {
@@ -12,12 +13,11 @@ export interface MatcherResult {
 }
 
 const Index = () => {
-  const [jobDescription, setJobDescription] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [showOutput, setShowOutput] = useState(false);
   const [matcherResult, setMatcherResult] = useState<MatcherResult | null>(null);
-  const user = useAuthStore((s) => s.user);
-  const profile = useAuthStore((s) => s.profile);
+  const { user, profile } = useAuthStore();
+  const { description } = useRoleStore();
   const { toast } = useToast();
 
   const resume = profile?.resume as { experiences?: unknown[]; projects?: unknown[]; skills?: unknown[] } | undefined;
@@ -27,7 +27,7 @@ const Index = () => {
     (Array.isArray(resume?.skills) && resume.skills.length > 0);
 
   const handleGenerate = async () => {
-    if (!jobDescription.trim()) return;
+    if (!description.trim()) return;
     setIsGenerating(true);
     setShowOutput(false);
     try {
@@ -36,7 +36,7 @@ const Index = () => {
         toast({ title: "Sign in required", description: "Please sign in to generate a tailored resume.", variant: "destructive" });
         return;
       }
-      const body = { job_description: jobDescription, user_id: user.id };
+      const body = { job_description: description, user_id: user.id };
       console.log("Matcher request body:", body);
 
       const matcherUrl = import.meta.env.DEV
@@ -82,8 +82,6 @@ const Index = () => {
             </div>
 
             <JobInput
-              jobDescription={jobDescription}
-              setJobDescription={setJobDescription}
               onGenerate={handleGenerate}
               isGenerating={isGenerating}
               hasResume={hasResume}
@@ -91,7 +89,11 @@ const Index = () => {
 
             {showOutput && (
               <div className="pt-4 border-t border-border">
-                <LatexOutput matcherResult={matcherResult} profile={profile} jobDescription={jobDescription} />
+                <LatexOutput
+                  matcherResult={matcherResult}
+                  profile={profile}
+                  userId={user?.id ?? null}
+                />
               </div>
             )}
           </div>

@@ -1,6 +1,6 @@
 import type { User, Session } from "@supabase/supabase-js";
 import { create } from "zustand";
-import { supabase } from "@/utils/supabase";
+import { supabase } from "@/lib/supabase";
 import type { Profile } from "@/types/profile";
 
 function profileFromUserMetadata(user: User | null): Profile | null {
