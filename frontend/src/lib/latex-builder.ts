@@ -2,6 +2,8 @@
  * Builds LaTeX from the template.tex structure using matcher result + profile.
  */
 
+import { RESUME_STY } from "./resume-sty";
+
 export interface MatcherJsonResult {
   experiences?: Array<{
     company?: string;
@@ -150,7 +152,7 @@ ${idx === projects.length - 1 ? "" : "\\vspace{-15pt}"}
 
   return `
 \\documentclass[letterpaper,11pt]{article}
-\\usepackage{../resume}
+${RESUME_STY}
 
 \\begin{document}
 
