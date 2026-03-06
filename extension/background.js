@@ -41,6 +41,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           title: "Resume Engine",
           message: "LinkedIn profile saved successfully.",
         });
+        if (sender.tab?.id) chrome.tabs.remove(sender.tab.id);
       })
       .catch((err) => {
         sendResponse({ error: err.message });
