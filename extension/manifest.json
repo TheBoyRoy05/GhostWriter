@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Resume Engine - LinkedIn Scraper",
+  "name": "GhostWriter - LinkedIn Scraper",
   "version": "1.0.0",
-  "description": "Scrape your LinkedIn profile and save to Resume Engine",
+  "description": "Scrape your LinkedIn profile and save to GhostWriter",
   "permissions": ["storage", "activeTab", "scripting", "notifications"],
   "host_permissions": [
     "https://www.linkedin.com/*",

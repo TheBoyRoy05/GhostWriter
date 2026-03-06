@@ -1,6 +1,6 @@
-# Resume Engine - LinkedIn Scraper Extension
+# GhostWriter - LinkedIn Scraper Extension
 
-A Chrome extension that scrapes your LinkedIn profile and saves it to your Resume Engine account.
+A Chrome extension that scrapes your LinkedIn profile and saves it to your GhostWriter account.
 
 ## Setup
 
@@ -16,7 +16,7 @@ A Chrome extension that scrapes your LinkedIn profile and saves it to your Resum
 
 ## Usage
 
-1. **Sign in** on your Resume Engine frontend (the website)
+1. **Sign in** on your GhostWriter frontend (the website)
 2. Go to **Profile** and click **Connect Extension**
 3. Open the extension popup and click **Scrape LinkedIn Profile**
 4. A LinkedIn tab opens and automatically scrapes: experience → education → certifications → skills → projects

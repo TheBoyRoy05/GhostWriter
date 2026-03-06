@@ -307,9 +307,9 @@ async function run() {
 
     chrome.runtime.sendMessage({ type: "SCRAPE_COMPLETE", data: resume }, (response) => {
       if (response?.error) {
-        alert("Resume Engine: Scrape failed – " + response.error);
+        alert("GhostWriter: Scrape failed – " + response.error);
       } else {
-        alert("Resume Engine: LinkedIn profile saved successfully!");
+        alert("GhostWriter: LinkedIn profile saved successfully!");
       }
     });
 
@@ -318,8 +318,8 @@ async function run() {
 }
 
 run().catch((e) => {
-  console.error("Resume Engine scraper error:", e);
+  console.error("GhostWriter scraper error:", e);
   chrome.runtime.sendMessage({ type: "SCRAPE_FAILED", error: e.message }, () => {
-    alert("Resume Engine: Scrape failed – " + e.message);
+    alert("GhostWriter: Scrape failed – " + e.message);
   });
 });

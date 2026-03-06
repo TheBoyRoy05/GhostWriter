@@ -77,7 +77,7 @@ const Index = () => {
           <div className="rounded-xl border border-border bg-card p-6 md:p-8 space-y-8 terminal-border">
             <div className="space-y-1">
               <p className="text-xs font-mono text-muted-foreground">
-                <span className="text-primary">$</span> resume-engine --tailor resume.tex --target &lt;job_description&gt;
+                <span className="text-primary">$</span> ghost-writer --tailor resume.tex --target &lt;job_description&gt;
               </p>
             </div>
 
@@ -98,7 +98,7 @@ const Index = () => {
 
           {/* Footer */}
           <p className="text-center text-xs font-mono text-muted-foreground">
-            ResumeEngine v0.1 — tailor your resume, not your skills
+            GhostWriter v0.1 — tailor your resume, not your skills
           </p>
         </div>
       </main>

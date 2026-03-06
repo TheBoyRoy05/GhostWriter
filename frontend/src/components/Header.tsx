@@ -31,7 +31,7 @@ const Header = () => {
             <Code size={20} className="text-primary" />
           </div>
           <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            ResumeEngine
+            GhostWriter
           </h1>
           <span className="text-xs font-mono text-muted-foreground ml-1 mt-0.5">v0.1</span>
         </Link>

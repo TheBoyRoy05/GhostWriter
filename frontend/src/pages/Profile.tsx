@@ -128,7 +128,7 @@ const Profile = () => {
       : `https://${linkedinUrl.trim()}`;
     window.postMessage(
       {
-        type: "RESUME_ENGINE_CONNECT",
+        type: "GHOST_WRITER_CONNECT",
         session: session,
         supabaseUrl,
         supabaseAnonKey,
@@ -139,7 +139,7 @@ const Profile = () => {
     window.addEventListener(
       "message",
       (e) => {
-        if (e.data?.type === "RESUME_ENGINE_CONNECTED") {
+        if (e.data?.type === "GHOST_WRITER_CONNECTED") {
           if (e.data.success) {
             toast({
               title: "Extension connected",
@@ -148,7 +148,7 @@ const Profile = () => {
           } else {
             toast({
               title: "Connection failed",
-              description: "Make sure the Resume Engine extension is installed.",
+              description: "Make sure the GhostWriter extension is installed.",
               variant: "destructive",
             });
           }
@@ -354,7 +354,7 @@ const Profile = () => {
                 <div className="w-full border-t pt-4">
                   <p className="text-sm font-medium mb-2">Browser Extension</p>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Connect the Resume Engine extension to scrape your LinkedIn profile and save it
+                    Connect the GhostWriter extension to scrape your LinkedIn profile and save it
                     here.
                   </p>
                   <Button

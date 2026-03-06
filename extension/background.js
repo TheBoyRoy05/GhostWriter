@@ -23,7 +23,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     chrome.notifications.create({
       type: "basic",
       iconUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
-      title: "Resume Engine",
+      title: "GhostWriter",
       message: "Scrape failed: " + (msg.error || "Unknown error"),
     });
     sendResponse({ ok: false });
@@ -38,7 +38,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         chrome.notifications.create({
           type: "basic",
           iconUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
-          title: "Resume Engine",
+          title: "GhostWriter",
           message: "LinkedIn profile saved successfully.",
         });
         if (sender.tab?.id) chrome.tabs.remove(sender.tab.id);
@@ -48,7 +48,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         chrome.notifications.create({
           type: "basic",
           iconUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
-          title: "Resume Engine",
+          title: "GhostWriter",
           message: "Scrape failed: " + err.message,
         });
       });

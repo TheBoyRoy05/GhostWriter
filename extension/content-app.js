@@ -1,12 +1,12 @@
 window.addEventListener("message", (event) => {
   if (event.source !== window) return;
-  if (event.data?.type !== "RESUME_ENGINE_CONNECT") return;
+  if (event.data?.type !== "GHOST_WRITER_CONNECT") return;
 
   const { session, supabaseUrl, supabaseAnonKey, linkedin } = event.data;
   if (!session?.access_token || !supabaseUrl || !supabaseAnonKey || !linkedin) return;
 
   if (typeof chrome === "undefined" || !chrome.runtime?.sendMessage) {
-    window.postMessage({ type: "RESUME_ENGINE_CONNECTED", success: false }, "*");
+    window.postMessage({ type: "GHOST_WRITER_CONNECTED", success: false }, "*");
     return;
   }
 
@@ -20,9 +20,9 @@ window.addEventListener("message", (event) => {
     },
     (response) => {
       if (response?.ok) {
-        window.postMessage({ type: "RESUME_ENGINE_CONNECTED", success: true }, "*");
+        window.postMessage({ type: "GHOST_WRITER_CONNECTED", success: true }, "*");
       } else {
-        window.postMessage({ type: "RESUME_ENGINE_CONNECTED", success: false }, "*");
+        window.postMessage({ type: "GHOST_WRITER_CONNECTED", success: false }, "*");
       }
     }
   );

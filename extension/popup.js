@@ -1,5 +1,5 @@
 // Default frontend URL - change for production
-const DEFAULT_FRONTEND_URL = "http://localhost:8080/ResumeEngine";
+const DEFAULT_FRONTEND_URL = "http://localhost:8080/GhostWriter";
 
 async function getFrontendUrl() {
   const { frontendUrl } = await chrome.storage.local.get("frontendUrl");
