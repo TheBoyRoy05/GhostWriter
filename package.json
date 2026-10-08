@@ -1,0 +1,24 @@
+{
+  "name": "ghostwriter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch server/server.ts & vite",
+    "server": "bun server/server.ts",
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "@types/bun": "1.2.23",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "tailwindcss": "4.3.3",
+    "typescript": "7.0.2",
+    "vite": "8.3.4"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
+}

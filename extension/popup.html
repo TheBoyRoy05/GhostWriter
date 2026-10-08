@@ -1,67 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
     <style>
-      body {
-        width: 280px;
-        padding: 16px;
-        font-family: system-ui, sans-serif;
-        font-size: 14px;
-      }
-      h2 {
-        margin: 0 0 12px;
-        font-size: 16px;
-      }
-      p {
-        margin: 0 0 12px;
-        color: #666;
-      }
-      button {
-        width: 100%;
-        padding: 10px 16px;
-        margin-bottom: 8px;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        cursor: pointer;
-        background: #0a66c2;
-        color: white;
-      }
-      button:hover {
-        background: #004182;
-      }
-      button:disabled {
-        background: #ccc;
-        cursor: not-allowed;
-      }
-      button.secondary {
-        background: #e8e8e8;
-        color: #333;
-      }
-      button.secondary:hover {
-        background: #ddd;
-      }
-      .status {
-        margin-top: 12px;
-        padding: 8px;
-        border-radius: 4px;
-        font-size: 12px;
-      }
-      .status.success { background: #d4edda; color: #155724; }
-      .status.error { background: #f8d7da; color: #721c24; }
-      .status.info { background: #d1ecf1; color: #0c5460; }
+      body { width: 280px; padding: 12px; font: 14px system-ui, sans-serif; }
+      input, button { width: 100%; box-sizing: border-box; padding: 8px; margin-bottom: 8px; }
+      button { border: 0; border-radius: 4px; background: #0a66c2; color: #fff; cursor: pointer; }
+      #status { font-size: 12px; }
     </style>
   </head>
   <body>
-    <h2>GhostWriter</h2>
-    <p id="authStatus">Checking auth...</p>
-    <p id="help" class="help" style="display:none; font-size:12px; color:#666; margin-bottom:8px;">
-      Sign in on the website, go to Profile, click "Connect Extension", then click Refresh above.
-    </p>
-    <button id="signIn" disabled>Sign in to GhostWriter</button>
-    <button id="refresh" class="secondary">Refresh connection status</button>
-    <button id="scrape" disabled>Scrape LinkedIn Profile</button>
+    <input id="linkedin" placeholder="https://www.linkedin.com/in/yourname" />
+    <button id="scrape">Scrape LinkedIn Profile</button>
+    <button id="job">Send This Job Page</button>
     <div id="status"></div>
     <script src="popup.js"></script>
   </body>

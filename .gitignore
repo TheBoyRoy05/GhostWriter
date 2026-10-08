@@ -40,3 +40,8 @@ temp
 *.lof.aux
 *.fls
 *.fdb_latexmk
+# Personal data and generated resumes
+data/*
+!data/profile.example.json
+output/
+.worktrees/

@@ -1,33 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "GhostWriter - LinkedIn Scraper",
-  "version": "1.0.0",
-  "description": "Scrape your LinkedIn profile and save to GhostWriter",
-  "permissions": ["storage", "activeTab", "scripting", "notifications"],
-  "host_permissions": [
-    "https://www.linkedin.com/*",
-    "http://localhost/*",
-    "http://127.0.0.1/*",
-    "http://*/*",
-    "https://*/*"
-  ],
-  "action": {
-    "default_popup": "popup.html"
-  },
-  "background": {
-    "service_worker": "background.js"
-  },
+  "name": "GhostWriter",
+  "version": "2.0.0",
+  "description": "Send your LinkedIn profile and job pages to the local GhostWriter server",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["https://www.linkedin.com/*", "http://127.0.0.1:3000/*"],
+  "action": { "default_popup": "popup.html" },
+  "background": { "service_worker": "background.js" },
   "content_scripts": [
-    {
-      "matches": [
-        "http://localhost/*",
-        "http://127.0.0.1/*",
-        "http://*/*",
-        "https://*/*"
-      ],
-      "js": ["content-app.js"],
-      "run_at": "document_start"
-    },
     {
       "matches": ["https://www.linkedin.com/in/*"],
       "js": ["content-linkedin.js"],
