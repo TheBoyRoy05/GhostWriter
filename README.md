@@ -7,7 +7,7 @@ Generates a tailored one-page resume from your LinkedIn data and a job descripti
 1. Install [Bun](https://bun.sh) and [Tectonic](https://tectonic-typesetting.github.io): `brew install oven-sh/bun/bun tectonic`
 2. Create `.env` with `OPENROUTER_API_KEY=...` (optionally `OPENROUTER_MODEL=...`).
 3. Copy `data/profile.example.json` to `data/profile.json` and fill it in. This holds the contact details LinkedIn scraping does not capture.
-4. Load `extension/` as an unpacked extension at `chrome://extensions` (Developer mode).
+4. Run `bun run build:extension`, then load `extension/` as an unpacked extension at `chrome://extensions` (Developer mode).
 5. Run `bun dev` and open http://127.0.0.1:5173.
 
 ## Use

@@ -83,7 +83,13 @@ Bun.serve({
     "/api/resume": {
       PUT: async (req) => {
         try {
-          await writeAtomic(RESUME, JSON.stringify(await jsonBody(req), null, 2));
+          const resume = await jsonBody(req);
+          const counts = Object.entries(resume).map(([key, value]) => `${key}=${Array.isArray(value) ? value.length : "?"}`);
+          console.log(`PUT /api/resume ${counts.join(" ")}`);
+          if (Object.values(resume).every((value) => Array.isArray(value) && value.length === 0)) {
+            return fail(new Error("Scraped resume is empty, so resume.json was left untouched. LinkedIn markup may have changed."), 422);
+          }
+          await writeAtomic(RESUME, JSON.stringify(resume, null, 2));
           return Response.json({ ok: true });
         } catch (e) {
           return fail(e, 400);

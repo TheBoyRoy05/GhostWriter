@@ -3,9 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun --watch server/server.ts & vite",
+    "dev": "bun run build:extension --watch & bun --watch server/server.ts & vite",
+    "build:extension": "bun build extension/src/content.js --outfile extension/dist/content-linkedin.js --format iife --target browser",
     "server": "bun server/server.ts",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "test": "bun test"
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.3.3",
@@ -13,6 +15,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.2",
+    "happy-dom": "20.14.5",
     "tailwindcss": "4.3.3",
     "typescript": "7.0.2",
     "vite": "8.3.4"

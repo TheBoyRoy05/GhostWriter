@@ -5,7 +5,8 @@ chrome.storage.local.get("linkedin").then(({ linkedin }) => ($("linkedin").value
 function send(msg, pending) {
   $("status").textContent = pending;
   chrome.runtime.sendMessage(msg, (res) => {
-    if (res?.error) $("status").textContent = res.error;
+    const error = chrome.runtime.lastError?.message ?? res?.error;
+    if (error) $("status").textContent = error;
     else window.close();
   });
 }
