@@ -20,6 +20,7 @@ export function scrapeCertifications(doc = document) {
     const credentialId = lines.map((l) => l.match(CREDENTIAL_ID)).find(Boolean);
     const [name = null, issuer = null] = lines.filter((l) => !ISSUED.test(l) && !CREDENTIAL_ID.test(l));
     return {
+      id,
       name,
       issuer,
       issued: issued?.[1] ?? null,

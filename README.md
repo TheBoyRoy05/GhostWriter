@@ -12,7 +12,7 @@ Generates a tailored one-page resume from your LinkedIn data and a job descripti
 
 ## Use
 
-- Profile: open the extension, enter your LinkedIn profile URL, click Scrape LinkedIn Profile. The scraper walks your detail pages and saves them to `data/resume.json`.
+- Profile: open the extension, enter your LinkedIn profile URL, click Scrape LinkedIn Profile. The scraper walks your detail pages and saves them to the `resume_items` table in `data/ghostwriter.db`.
 - Job: on a job posting, click Send This Job Page, or paste the description into the app.
 - Click Generate. The model picks the most relevant experiences, projects and skills; the server renders them into LaTeX and compiles a PDF. Edit the LaTeX and the preview recompiles.
 

@@ -2,13 +2,15 @@ import { rename, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import buildPrompt from "./prompt";
 import { buildLatexFromMatcherResult, type MatcherJsonResult } from "./latex";
+import { openDatabase } from "./db";
+import { readResume, syncResume } from "./resume";
 
 const ROOT = join(import.meta.dir, "..");
-const RESUME = join(ROOT, "data/resume.json");
 const PROFILE = join(ROOT, "data/profile.json");
 const JOB = join(ROOT, "data/job.txt");
 const OUTPUT = join(ROOT, "output");
 const PORT = Number(process.env.PORT ?? 3000);
+const db = openDatabase(join(ROOT, "data/ghostwriter.db"));
 const MODEL = process.env.OPENROUTER_MODEL ?? "arcee-ai/trinity-large-preview:free";
 
 async function writeAtomic(path: string, data: string) {
@@ -31,7 +33,9 @@ function stripCodeFence(text: string) {
 async function generate(job: string) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY not set in .env");
-  const [resume, profile] = await Promise.all([readJson(RESUME), readJson(PROFILE)]);
+  const resume = readResume(db);
+  if (resume.experiences.length === 0) throw new Error("No resume in the database yet; run the LinkedIn scrape first");
+  const profile = await readJson(PROFILE);
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -86,11 +90,9 @@ Bun.serve({
           const resume = await jsonBody(req);
           const counts = Object.entries(resume).map(([key, value]) => `${key}=${Array.isArray(value) ? value.length : "?"}`);
           console.log(`PUT /api/resume ${counts.join(" ")}`);
-          if (Object.values(resume).every((value) => Array.isArray(value) && value.length === 0)) {
-            return fail(new Error("Scraped resume is empty, so resume.json was left untouched. LinkedIn markup may have changed."), 422);
-          }
-          await writeAtomic(RESUME, JSON.stringify(resume, null, 2));
-          return Response.json({ ok: true });
+          const { kept } = syncResume(db, resume);
+          if (kept.length) console.warn(`PUT /api/resume scraped no ${kept.join(", ")}; kept stored rows`);
+          return Response.json({ ok: true, kept });
         } catch (e) {
           return fail(e, 400);
         }

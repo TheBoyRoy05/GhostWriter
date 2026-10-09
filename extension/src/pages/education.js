@@ -9,6 +9,7 @@ export function scrapeEducation(doc = document) {
     const grade = paragraphs(item).find((l) => l.startsWith("Grade:"))?.replace(/^Grade:\s*/, "") ?? null;
     const box = item.querySelector('[data-testid="expandable-text-box"]');
     return {
+      id,
       school,
       degree: rest.find((l) => l !== dateLine) ?? null,
       start: dates?.[1] ?? null,

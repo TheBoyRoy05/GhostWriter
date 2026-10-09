@@ -12,6 +12,7 @@ export function scrapeProjects(doc = document) {
     const link = [...item.querySelectorAll("a[href^='http']")].find((a) => !new URL(a.href).hostname.endsWith("linkedin.com"));
     const associated = paragraphs(item).map((l) => l.match(ASSOCIATED)).find(Boolean);
     return {
+      id,
       title,
       link: link?.href ?? null,
       associatedWith: associated?.[1] ?? null,

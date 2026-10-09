@@ -12,9 +12,10 @@ export function scrapeSkills(doc = document) {
   const section = doc.querySelector('[data-testid^="profile_SkillDetails"]');
   if (!section) return [];
   return [...section.querySelectorAll(SKILL_ITEM)].map((item) => {
+    const id = item.getAttribute("componentkey").match(/, (\d+)\)$/)[1];
     const paragraphs = [...item.querySelectorAll("p")].filter((p) => !p.querySelector(COLLAPSED_SUMMARY));
     const [name, ...usedIn] = texts(paragraphs);
-    return { name, usedIn: usedIn.filter((l) => !ENDORSEMENTS.test(l)) };
+    return { id, name, usedIn: usedIn.filter((l) => !ENDORSEMENTS.test(l)) };
   });
 }
 
@@ -44,5 +45,5 @@ export function attachSkills(resume) {
       entry.skills = [...new Set([...entry.skills, ...joined])];
     }
   }
-  return { ...resume, skills: [...new Set(rows.map((r) => r.name))] };
+  return { ...resume, skills: rows.map(({ id, name }) => ({ id, name })) };
 }

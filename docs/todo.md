@@ -4,7 +4,7 @@ Design lives in the Vault note `01 - Projects/GhostWriter.md`.
 
 ## Build
 
-5. **Resume sync API.** Writes only `profile.resume`, never other profile fields. Depends on 4.
+5. **Resume sync API.** Done in code, needs a live scrape: `PUT /api/resume` upserts `resume_items` by LinkedIn id. Remaining: move `data/profile.json` hand fields into the `profile` row.
 6. **Job intake API.** Accepts page `innerText` + link, derives `source`. Depends on 4.
 7. **LLM selection.** OpenRouter returns selection JSON (experiences, projects, skills). Depends on 5, 6.
 8. **Extract application fields.** LLM fills company, title, pay, location, `req_id`, deadline, cover letter requirement. Depends on 6.

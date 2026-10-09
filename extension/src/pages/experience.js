@@ -41,6 +41,7 @@ function parsePosition(editButton) {
   const descriptionBox = root.querySelector('[data-testid="expandable-text-box"]');
 
   return {
+    id,
     company,
     title,
     employmentType,

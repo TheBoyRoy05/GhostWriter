@@ -185,17 +185,22 @@ describe("attachSkills", () => {
       certifications: [{ name: "Cloud Cert", skills: [] }],
       education: [{ school: "State U", skills: [] }],
       skills: [
-        { name: "Go", usedIn: ["Intern at Acme"] },
-        { name: "C++", usedIn: ["Intern at Acme", "Rocket"] },
-        { name: "AWS", usedIn: ["Cloud Cert", "State U"] },
-        { name: "Communication", usedIn: [] },
+        { id: "1", name: "Go", usedIn: ["Intern at Acme"] },
+        { id: "2", name: "C++", usedIn: ["Intern at Acme", "Rocket"] },
+        { id: "3", name: "AWS", usedIn: ["Cloud Cert", "State U"] },
+        { id: "4", name: "Communication", usedIn: [] },
       ],
     });
     expect(resume.experiences[0].skills).toEqual(["Go", "C++"]);
     expect(resume.projects[0].skills).toEqual(["C++"]);
     expect(resume.certifications[0].skills).toEqual(["AWS"]);
     expect(resume.education[0].skills).toEqual(["AWS"]);
-    expect(resume.skills).toEqual(["Go", "C++", "AWS", "Communication"]);
+    expect(resume.skills).toEqual([
+      { id: "1", name: "Go" },
+      { id: "2", name: "C++" },
+      { id: "3", name: "AWS" },
+      { id: "4", name: "Communication" },
+    ]);
   });
 });
 
@@ -227,5 +232,25 @@ describe("inlineSkills", () => {
     ["", []],
   ])("%p", (text, skills) => {
     expect(inlineSkills(text)).toEqual(skills);
+  });
+});
+
+describe("entry ids", () => {
+  test.each([
+    ["experience", () => scrapeExperience(experienceDoc), 9],
+    ["education", () => scrapeEducation(educationDoc), 2],
+    ["projects", () => scrapeProjects(projectsDoc), 13],
+    ["certifications", () => scrapeCertifications(certificationsDoc), 5],
+    ["skills", () => scrapeSkills(skillsDoc), 75],
+  ])("every %s entry carries a unique LinkedIn id", (_, scrape, count) => {
+    const ids = scrape().map((e) => e.id);
+    expect(ids.length).toBe(count);
+    for (const id of ids) expect(id).toMatch(/^\d+$/);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  test("ids come from LinkedIn's record, e.g. Python is skill 44", () => {
+    expect(scrapeSkills(skillsDoc).find((s) => s.name === "Python").id).toBe("44");
+    expect(scrapeExperience(experienceDoc).map((e) => e.id)).toContain("2904986373");
   });
 });
