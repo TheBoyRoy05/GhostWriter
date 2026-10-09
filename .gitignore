@@ -45,3 +45,4 @@ data/*
 !data/profile.example.json
 output/
 .worktrees/
+.kiro/
