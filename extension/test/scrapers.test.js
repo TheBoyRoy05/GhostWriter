@@ -7,17 +7,14 @@ import { scrapeCertifications } from "../src/pages/certifications.js";
 import { scrapeSkills, scrapeSkillInsights, findInsightsLink, attachSkills, INSIGHTS_SCREEN } from "../src/pages/skills.js";
 import { inlineSkills } from "../src/text.js";
 
-const FIXTURES = new URL("../../data/fixtures/", import.meta.url);
+const FIXTURES = new URL("./fixtures/", import.meta.url);
 
 async function fixture(name) {
-  const file = Bun.file(new URL(name, FIXTURES));
-  if (!(await file.exists())) return null;
   const doc = new Window({ url: "https://www.linkedin.com/in/someone/details/experience/" }).document;
-  doc.body.innerHTML = await file.text();
+  doc.body.innerHTML = await Bun.file(new URL(name, FIXTURES)).text();
   return doc;
 }
 
-// Fixtures hold real profile data, so they live in gitignored data/ and these tests skip without them.
 const experienceDoc = await fixture("experience.html");
 const educationDoc = await fixture("education.html");
 const projectsDoc = await fixture("projects.html");
@@ -33,7 +30,7 @@ function expectCleanSkills(entries) {
   }
 }
 
-describe.skipIf(!experienceDoc)("scrapeExperience on saved experience page", () => {
+describe("scrapeExperience on saved experience page", () => {
   const entries = experienceDoc ? scrapeExperience(experienceDoc) : [];
 
   test("returns one entry per position, including both roles under a grouped company", () => {
@@ -77,7 +74,7 @@ describe.skipIf(!experienceDoc)("scrapeExperience on saved experience page", () 
   test("skills are clean", () => expectCleanSkills(entries));
 });
 
-describe.skipIf(!educationDoc)("scrapeEducation on saved education page", () => {
+describe("scrapeEducation on saved education page", () => {
   const entries = educationDoc ? scrapeEducation(educationDoc) : [];
 
   test("returns one entry per school with school, degree and start date", () => {
@@ -99,7 +96,7 @@ describe.skipIf(!educationDoc)("scrapeEducation on saved education page", () => 
   test("skills are clean", () => expectCleanSkills(entries));
 });
 
-describe.skipIf(!projectsDoc)("scrapeProjects on saved projects page", () => {
+describe("scrapeProjects on saved projects page", () => {
   const entries = projectsDoc ? scrapeProjects(projectsDoc) : [];
 
   test("returns one entry per project, each with title, start and bullets", () => {
@@ -131,7 +128,7 @@ describe.skipIf(!projectsDoc)("scrapeProjects on saved projects page", () => {
   test("skills are clean", () => expectCleanSkills(entries));
 });
 
-describe.skipIf(!certificationsDoc)("scrapeCertifications on saved certifications page", () => {
+describe("scrapeCertifications on saved certifications page", () => {
   const entries = certificationsDoc ? scrapeCertifications(certificationsDoc) : [];
 
   test("returns one entry per certification with name, issuer and issue date", () => {
@@ -150,7 +147,7 @@ describe.skipIf(!certificationsDoc)("scrapeCertifications on saved certification
   test("skills are clean", () => expectCleanSkills(entries));
 });
 
-describe.skipIf(!skillsDoc)("scrapeSkills on saved skills page", () => {
+describe("scrapeSkills on saved skills page", () => {
   test("returns every skill once, matching the edit buttons", () => {
     const names = scrapeSkills(skillsDoc).map((r) => r.name);
     expect(names.length).toBe(skillsDoc.querySelectorAll('a[aria-label^="Edit "][aria-label$=" skill"]').length);
@@ -170,7 +167,7 @@ describe.skipIf(!skillsDoc)("scrapeSkills on saved skills page", () => {
   });
 });
 
-describe.skipIf(!insightsDoc)("scrapeSkillInsights on saved insights dialog", () => {
+describe("scrapeSkillInsights on saved insights dialog", () => {
   test("lists every entry the dialog promises, without endorsements", () => {
     const labels = scrapeSkillInsights(insightsDoc.querySelector(INSIGHTS_SCREEN));
     expect(labels.length).toBe(8);
@@ -202,7 +199,7 @@ describe("attachSkills", () => {
   });
 });
 
-describe.skipIf(!skillsDoc || !experienceDoc || !projectsDoc)("attachSkills on saved pages", () => {
+describe("attachSkills on saved pages", () => {
   test("every skill row tied to a scraped entry lands on that entry", () => {
     const rows = scrapeSkills(skillsDoc);
     const resume = attachSkills({ experiences: scrapeExperience(experienceDoc), projects: scrapeProjects(projectsDoc), skills: rows });
