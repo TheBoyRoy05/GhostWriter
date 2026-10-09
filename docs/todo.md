@@ -4,7 +4,6 @@ Design lives in the Vault note `01 - Projects/GhostWriter.md`.
 
 ## Build
 
-4. **SQLite schema.** `profile` (with `resume` key), `applications`, `status_events` per the design note. Depends on 3.
 5. **Resume sync API.** Writes only `profile.resume`, never other profile fields. Depends on 4.
 6. **Job intake API.** Accepts page `innerText` + link, derives `source`. Depends on 4.
 7. **LLM selection.** OpenRouter returns selection JSON (experiences, projects, skills). Depends on 5, 6.
@@ -29,3 +28,4 @@ Design lives in the Vault note `01 - Projects/GhostWriter.md`.
 1. **Take down Supabase matcher.** Project paused; CI deploy removed on `minimal`.
 2. **PII in public repo.** Accepted as is: phone and email are already public on the personal website.
 3. **Scaffold Bun + Vite app.** `bun dev` runs server and Vite; Vite proxies `/api`; Tailwind; `data/` and `output/` gitignored.
+4. **SQLite schema.** `server/db.ts` creates `profile` (one JSON row), `applications` (enums enforced by `CHECK`), `status_events` (cascade on delete). Schema changes go in as append-only files in `server/migrations/`, tracked by `PRAGMA user_version`. Not yet wired into `server/server.ts`; #5 and #6 do that.
