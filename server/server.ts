@@ -4,9 +4,9 @@ import buildPrompt from "./prompt";
 import { buildLatexFromMatcherResult, type MatcherJsonResult } from "./latex";
 import { openDatabase } from "./db";
 import { readResume, syncResume } from "./resume";
+import { readProfile, writeProfile } from "./profile";
 
 const ROOT = join(import.meta.dir, "..");
-const PROFILE = join(ROOT, "data/profile.json");
 const JOB = join(ROOT, "data/job.txt");
 const OUTPUT = join(ROOT, "output");
 const PORT = Number(process.env.PORT ?? 3000);
@@ -16,12 +16,6 @@ const MODEL = process.env.OPENROUTER_MODEL ?? "arcee-ai/trinity-large-preview:fr
 async function writeAtomic(path: string, data: string) {
   await Bun.write(`${path}.tmp`, data);
   await rename(`${path}.tmp`, path);
-}
-
-async function readJson(path: string) {
-  const file = Bun.file(path);
-  if (!(await file.exists())) throw new Error(`${path} missing`);
-  return file.json();
 }
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "untitled";
@@ -35,7 +29,8 @@ async function generate(job: string) {
   if (!apiKey) throw new Error("OPENROUTER_API_KEY not set in .env");
   const resume = readResume(db);
   if (resume.experiences.length === 0) throw new Error("No resume in the database yet; run the LinkedIn scrape first");
-  const profile = await readJson(PROFILE);
+  const profile = readProfile(db);
+  if (!profile?.name) throw new Error("Fill in your profile first (Profile button, top right)");
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -93,6 +88,16 @@ Bun.serve({
           const { kept } = syncResume(db, resume);
           if (kept.length) console.warn(`PUT /api/resume scraped no ${kept.join(", ")}; kept stored rows`);
           return Response.json({ ok: true, kept });
+        } catch (e) {
+          return fail(e, 400);
+        }
+      },
+    },
+    "/api/profile": {
+      GET: () => Response.json(readProfile(db) ?? {}),
+      PUT: async (req) => {
+        try {
+          return Response.json(writeProfile(db, await jsonBody(req)));
         } catch (e) {
           return fail(e, 400);
         }

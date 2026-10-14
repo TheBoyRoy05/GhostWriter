@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import ProfileDialog from "./ProfileDialog";
 
 type Status = { text: string; error?: boolean };
 
@@ -55,34 +56,40 @@ export default function App() {
   }
 
   return (
-    <main className="grid h-full grid-cols-2">
-      <section className="grid min-h-0 grid-rows-[30%_auto_1fr_auto] gap-3 p-4">
-        <textarea
-          className={field}
-          aria-label="Job description"
-          placeholder="Paste the job description, or send it from the extension"
-          value={job}
-          onChange={(e) => setJob(e.target.value)}
-        />
-        <button
-          className="rounded border border-neon px-4 py-2 font-semibold text-neon transition hover:bg-neon hover:text-black disabled:opacity-40"
-          disabled={generating || !job.trim()}
-          onClick={generate}
-        >
-          Generate
-        </button>
-        <textarea
-          className={field}
-          aria-label="LaTeX source"
-          placeholder="LaTeX appears here. Edits recompile after 1 s."
-          value={latex}
-          onChange={(e) => editLatex(e.target.value)}
-        />
-        <p role="status" className={`max-h-32 overflow-auto whitespace-pre-wrap text-sm ${status.error ? "text-danger" : "text-ink"}`}>
-          {status.text}
-        </p>
-      </section>
-      <iframe className="h-full w-full border-l border-edge bg-panel" title="Resume PDF preview" src={pdfUrl || undefined} />
-    </main>
+    <div className="flex h-full flex-col">
+      <header className="flex items-center justify-between border-b border-edge px-4 py-2">
+        <h1 className="font-semibold text-neon">GhostWriter</h1>
+        <ProfileDialog />
+      </header>
+      <main className="grid min-h-0 flex-1 grid-cols-2">
+        <section className="grid min-h-0 grid-rows-[30%_auto_1fr_auto] gap-3 p-4">
+          <textarea
+            className={field}
+            aria-label="Job description"
+            placeholder="Paste the job description, or send it from the extension"
+            value={job}
+            onChange={(e) => setJob(e.target.value)}
+          />
+          <button
+            className="rounded border border-neon px-4 py-2 font-semibold text-neon transition hover:bg-neon hover:text-black disabled:opacity-40"
+            disabled={generating || !job.trim()}
+            onClick={generate}
+          >
+            Generate
+          </button>
+          <textarea
+            className={field}
+            aria-label="LaTeX source"
+            placeholder="LaTeX appears here. Edits recompile after 1 s."
+            value={latex}
+            onChange={(e) => editLatex(e.target.value)}
+          />
+          <p role="status" className={`max-h-32 overflow-auto whitespace-pre-wrap text-sm ${status.error ? "text-danger" : "text-ink"}`}>
+            {status.text}
+          </p>
+        </section>
+        <iframe className="h-full w-full border-l border-edge bg-panel" title="Resume PDF preview" src={pdfUrl || undefined} />
+      </main>
+    </div>
   );
 }
