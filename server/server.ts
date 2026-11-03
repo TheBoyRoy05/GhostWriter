@@ -5,6 +5,7 @@ import { buildLatexFromMatcherResult, type MatcherJsonResult } from "./latex";
 import { openDatabase } from "./db";
 import { readResume, syncResume } from "./resume";
 import { readProfile, writeProfile } from "./profile";
+import { addApplication } from "./applications";
 
 const ROOT = join(import.meta.dir, "..");
 const JOB = join(ROOT, "data/job.txt");
@@ -98,6 +99,17 @@ Bun.serve({
       PUT: async (req) => {
         try {
           return Response.json(writeProfile(db, await jsonBody(req)));
+        } catch (e) {
+          return fail(e, 400);
+        }
+      },
+    },
+    "/api/applications": {
+      POST: async (req) => {
+        try {
+          const result = addApplication(db, await jsonBody(req));
+          console.log(`POST /api/applications id=${result.id} ${result.created ? "created" : "existing link"}`);
+          return Response.json(result, { status: result.created ? 201 : 200 });
         } catch (e) {
           return fail(e, 400);
         }
