@@ -5,7 +5,7 @@ import { buildLatexFromMatcherResult, type MatcherJsonResult } from "./latex";
 import { openDatabase } from "./db";
 import { readResume, syncResume } from "./resume";
 import { readProfile, writeProfile } from "./profile";
-import { addApplication } from "./applications";
+import { addApplication, addStatusEvent, listApplications, updateApplication } from "./applications";
 
 const ROOT = join(import.meta.dir, "..");
 const JOB = join(ROOT, "data/job.txt");
@@ -73,8 +73,14 @@ async function jsonBody(req: Request) {
   return req.json();
 }
 
-const fail = (err: unknown, status = 500) =>
-  Response.json({ error: err instanceof Error ? err.message : String(err) }, { status });
+function fail(req: Request, err: unknown, status = 500) {
+  const error = err instanceof Error ? err.message : String(err);
+  console.warn(`${req.method} ${new URL(req.url).pathname} ${status}: ${error}`);
+  return Response.json({ error }, { status });
+}
+
+// Number() would also accept "0x1", "1e0" and " 1", so one row would answer to several URLs.
+const idOf = (text: string) => (/^\d+$/.test(text) ? Number(text) : null);
 
 Bun.serve({
   hostname: "127.0.0.1",
@@ -90,7 +96,7 @@ Bun.serve({
           if (kept.length) console.warn(`PUT /api/resume scraped no ${kept.join(", ")}; kept stored rows`);
           return Response.json({ ok: true, kept });
         } catch (e) {
-          return fail(e, 400);
+          return fail(req, e, 400);
         }
       },
     },
@@ -100,18 +106,51 @@ Bun.serve({
         try {
           return Response.json(writeProfile(db, await jsonBody(req)));
         } catch (e) {
-          return fail(e, 400);
+          return fail(req, e, 400);
         }
       },
     },
     "/api/applications": {
+      GET: () => {
+        const applications = listApplications(db);
+        console.log(`GET /api/applications count=${applications.length}`);
+        return Response.json(applications);
+      },
       POST: async (req) => {
         try {
           const result = addApplication(db, await jsonBody(req));
           console.log(`POST /api/applications id=${result.id} ${result.created ? "created" : "existing link"}`);
           return Response.json(result, { status: result.created ? 201 : 200 });
         } catch (e) {
-          return fail(e, 400);
+          return fail(req, e, 400);
+        }
+      },
+    },
+    "/api/applications/:id": {
+      PATCH: async (req) => {
+        const id = idOf(req.params.id);
+        if (id === null) return fail(req, "Application not found", 404);
+        try {
+          const updated = updateApplication(db, id, await jsonBody(req));
+          if (!updated) return fail(req, "Application not found", 404);
+          console.log(`PATCH /api/applications/${id} fields=${updated.fields.join(",") || "none"}`);
+          return Response.json(updated.application);
+        } catch (e) {
+          return fail(req, e, 400);
+        }
+      },
+    },
+    "/api/applications/:id/events": {
+      POST: async (req) => {
+        const id = idOf(req.params.id);
+        if (id === null) return fail(req, "Application not found", 404);
+        try {
+          const event = addStatusEvent(db, id, await jsonBody(req));
+          if (!event) return fail(req, "Application not found", 404);
+          console.log(`POST /api/applications/${id}/events status=${event.status}`);
+          return Response.json(event, { status: 201 });
+        } catch (e) {
+          return fail(req, e, 400);
         }
       },
     },
@@ -126,7 +165,7 @@ Bun.serve({
           await writeAtomic(JOB, String(text ?? ""));
           return Response.json({ ok: true });
         } catch (e) {
-          return fail(e, 400);
+          return fail(req, e, 400);
         }
       },
     },
@@ -137,7 +176,7 @@ Bun.serve({
           await writeAtomic(JOB, job);
           return Response.json(await generate(job));
         } catch (e) {
-          return fail(e);
+          return fail(req, e);
         }
       },
     },
@@ -149,7 +188,7 @@ Bun.serve({
             headers: { "Content-Type": "application/pdf" },
           });
         } catch (e) {
-          return fail(e, 422);
+          return fail(req, e, 422);
         }
       },
     },
