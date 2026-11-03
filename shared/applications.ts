@@ -31,6 +31,6 @@ export type Application = {
   deadline: string | null;
   contacts: Contact[];
   notes: string | null;
-  status: Status | null;
-  status_at: string | null;
+  // Oldest first, so the current status is the last entry.
+  events: StatusEvent[];
 };

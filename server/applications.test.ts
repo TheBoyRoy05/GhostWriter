@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { openDatabase } from "./db";
-import { addApplication, addStatusEvent, listApplications, updateApplication } from "./applications";
+import { addApplication, addStatusEvent, deleteStatusEvent, listApplications, updateApplication } from "./applications";
 
 const open = () => openDatabase(":memory:");
 const rowOf = (db: ReturnType<typeof open>, id: number) =>
@@ -87,7 +87,7 @@ describe("addApplication", () => {
 });
 
 describe("listApplications", () => {
-  test("lists newest first with the latest status event as the current status", () => {
+  test("lists newest first with each application's events oldest first", () => {
     const db = open();
     const older = addApplication(db, { text: "Old job" }).id;
     const newer = addApplication(db, { text: "New job" }).id;
@@ -95,16 +95,19 @@ describe("listApplications", () => {
     db.run("INSERT INTO status_events (application_id, status, at) VALUES (?, 'sent', '2026-01-01T00:00:00.000Z')", [older]);
 
     const [first, second] = listApplications(db);
-    expect(first).toMatchObject({ id: newer, status: null, status_at: null });
-    expect(second).toMatchObject({ id: older, status: "interview", status_at: "2026-02-01T00:00:00.000Z" });
+    expect(first).toMatchObject({ id: newer, events: [] });
+    expect(second.events.map(({ status, at }) => ({ status, at }))).toEqual([
+      { status: "sent", at: "2026-01-01T00:00:00.000Z" },
+      { status: "interview", at: "2026-02-01T00:00:00.000Z" },
+    ]);
   });
 
-  test("a later event on the same millisecond still becomes the current status", () => {
+  test("events on the same millisecond keep the order they were recorded in", () => {
     const db = open();
     const { id } = addApplication(db, { text: "Job" });
     db.run("INSERT INTO status_events (application_id, status, at) VALUES (?, 'sent', '2026-01-01T00:00:00.000Z')", [id]);
     db.run("INSERT INTO status_events (application_id, status, at) VALUES (?, 'rejected', '2026-01-01T00:00:00.000Z')", [id]);
-    expect(listApplications(db)[0].status).toBe("rejected");
+    expect(listApplications(db)[0].events.map((event) => event.status)).toEqual(["sent", "rejected"]);
   });
 
   test("returns contacts parsed and cover_letter_sent as a boolean", () => {
@@ -116,6 +119,15 @@ describe("listApplications", () => {
 });
 
 describe("updateApplication", () => {
+  test("returns the application with its events, oldest first", () => {
+    const db = open();
+    const { id } = addApplication(db, { text: "Job" });
+    const sent = addStatusEvent(db, id, { status: "sent", at: "2026-01-01T00:00:00.000Z" })!;
+    const interview = addStatusEvent(db, id, { status: "interview" })!;
+
+    expect(updateApplication(db, id, { company: "Acme" })?.application.events).toEqual([sent, interview]);
+  });
+
   test("reports the fields it applied", () => {
     const db = open();
     const { id } = addApplication(db, { text: "Job" });
@@ -195,7 +207,14 @@ describe("addStatusEvent", () => {
     const event = addStatusEvent(db, id, { status: "sent" });
     expect(event?.status).toBe("sent");
     expect(Date.now() - Date.parse(event!.at)).toBeLessThan(5_000);
-    expect(listApplications(db)[0]).toMatchObject({ status: "sent", status_at: event!.at });
+    expect(listApplications(db)[0].events).toEqual([event!]);
+  });
+
+  test("backdates to the given time, stored in UTC ISO form", () => {
+    const db = open();
+    const { id } = addApplication(db, { text: "Job" });
+    const event = addStatusEvent(db, id, { status: "sent", at: "2026-10-28T12:00:00-07:00" });
+    expect(event?.at).toBe("2026-10-28T19:00:00.000Z");
   });
 
   test("returns null for a missing application", () => {
@@ -208,10 +227,86 @@ describe("addStatusEvent", () => {
     ["a non-object body", "Status event must be an object", null],
     ["an unknown status", "status must be one of sent, interview_invite, interview, offer, rejected, withdrawn", { status: "ghosted" }],
     ["a missing status", "status must be one of sent, interview_invite, interview, offer, rejected, withdrawn", {}],
+    ["an unparseable time", "at must be an ISO timestamp", { status: "sent", at: "last week" }],
+    ["a US-style date", "at must be an ISO timestamp", { status: "sent", at: "10/28/2026" }],
+    ["a date with no time", "at must be an ISO timestamp", { status: "sent", at: "2026-10-28" }],
+    ["a time with no offset", "at must be an ISO timestamp", { status: "sent", at: "2026-10-28T12:00" }],
+    ["a non-string time", "at must be an ISO timestamp", { status: "sent", at: 1_700_000_000_000 }],
+    ["a future time", "at must not be in the future", { status: "sent", at: new Date(Date.now() + 60_000).toISOString() }],
   ])("rejects %s and writes nothing", (_case, message, body) => {
     const db = open();
     const { id } = addApplication(db, { text: "Job" });
     expect(() => addStatusEvent(db, id, body)).toThrow(message);
     expect(eventCountOf(db)).toBe(0);
+  });
+});
+
+describe("deleteStatusEvent", () => {
+  test("deletes the last recorded event, leaving the earlier ones", () => {
+    const db = open();
+    const { id } = addApplication(db, { text: "Job" });
+    const sent = addStatusEvent(db, id, { status: "sent" })!;
+    const misclick = addStatusEvent(db, id, { status: "rejected" })!;
+
+    expect(deleteStatusEvent(db, id, misclick.id)).toEqual(misclick);
+    expect(listApplications(db)[0].events).toEqual([sent]);
+  });
+
+  test("deletes a backdated event when it was recorded last", () => {
+    const db = open();
+    const { id } = addApplication(db, { text: "Job" });
+    addStatusEvent(db, id, { status: "interview" });
+    const backdated = addStatusEvent(db, id, { status: "sent", at: "2026-01-01T00:00:00.000Z" })!;
+
+    expect(deleteStatusEvent(db, id, backdated.id)).toEqual(backdated);
+  });
+
+  test("undoes repeatedly, each time the newest remaining event", () => {
+    const db = open();
+    const { id } = addApplication(db, { text: "Job" });
+    const sent = addStatusEvent(db, id, { status: "sent" })!;
+    const interview = addStatusEvent(db, id, { status: "interview" })!;
+
+    expect(deleteStatusEvent(db, id, interview.id)).toEqual(interview);
+    expect(deleteStatusEvent(db, id, sent.id)).toEqual(sent);
+    expect(eventCountOf(db)).toBe(0);
+  });
+
+  test("a stale undo refuses once a new event took the undone event's place", () => {
+    const db = open();
+    const { id } = addApplication(db, { text: "Job" });
+    const misclick = addStatusEvent(db, id, { status: "rejected" })!;
+    deleteStatusEvent(db, id, misclick.id);
+    const interview = addStatusEvent(db, id, { status: "interview" })!;
+
+    expect(interview.id).not.toBe(misclick.id);
+    expect(deleteStatusEvent(db, id, misclick.id)).toBe("missing");
+    expect(listApplications(db)[0].events).toEqual([interview]);
+  });
+
+  test("refuses an older event and keeps it", () => {
+    const db = open();
+    const { id } = addApplication(db, { text: "Job" });
+    const sent = addStatusEvent(db, id, { status: "sent" })!;
+    addStatusEvent(db, id, { status: "interview" });
+
+    expect(deleteStatusEvent(db, id, sent.id)).toBe("not_last_recorded");
+    expect(eventCountOf(db)).toBe(2);
+  });
+
+  test("reports an event that belongs to another application as missing", () => {
+    const db = open();
+    const first = addApplication(db, { text: "First job" }).id;
+    const second = addApplication(db, { text: "Second job" }).id;
+    const event = addStatusEvent(db, first, { status: "sent" })!;
+
+    expect(deleteStatusEvent(db, second, event.id)).toBe("missing");
+    expect(eventCountOf(db)).toBe(1);
+  });
+
+  test("reports a nonexistent event as missing", () => {
+    const db = open();
+    const { id } = addApplication(db, { text: "Job" });
+    expect(deleteStatusEvent(db, id, 99)).toBe("missing");
   });
 });

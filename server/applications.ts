@@ -19,12 +19,16 @@ const MAX_DESCRIPTION_CHARS = 200_000;
 const TRACKING_PARAMS = ["trk", "refId", "trackingId"];
 
 const LISTED_APPLICATIONS = `
-  SELECT a.id, a.company, a.position_title, a.pay_low, a.pay_high, a.pay_unit, a.location, a.location_type,
-         a.start_date, a.cover_letter, a.cover_letter_sent, a.link, a.source, a.req_id, a.deadline, a.contacts, a.notes,
-         e.status, e.at AS status_at
-  FROM applications a
-  LEFT JOIN status_events e
-    ON e.id = (SELECT id FROM status_events WHERE application_id = a.id ORDER BY at DESC, id DESC LIMIT 1)`;
+  SELECT id, company, position_title, pay_low, pay_high, pay_unit, location, location_type, start_date,
+         cover_letter, cover_letter_sent, link, source, req_id, deadline, contacts, notes
+  FROM applications`;
+
+const LISTED_EVENTS = "SELECT id, application_id, status, at FROM status_events";
+// id breaks same-millisecond ties in recorded order.
+const EVENT_ORDER = "ORDER BY at, id";
+
+// Date.parse alone also takes "10/28/2026", and reads a time with no offset in the server's own zone.
+const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/;
 
 const EDITABLE_FIELDS = {
   company: optionalText,
@@ -47,7 +51,13 @@ type NewApplication = { description: string; link: string | null; source: Source
 type StoredValue = string | number | null;
 type Parser = (value: unknown, field: string) => StoredValue;
 type PayRange = { pay_low: number | null; pay_high: number | null };
-type ApplicationRow = Omit<Application, "cover_letter_sent" | "contacts"> & { cover_letter_sent: number; contacts: string };
+type ApplicationRow = Omit<Application, "cover_letter_sent" | "contacts" | "events"> & {
+  cover_letter_sent: number;
+  contacts: string;
+};
+type EventRow = StatusEvent & { application_id: number };
+type NewEvent = { status: Status; at: string };
+type EventRefusal = "missing" | "not_last_recorded";
 
 export function addApplication(db: Database, body: unknown) {
   const { description, link, source } = validateNew(body);
@@ -64,7 +74,11 @@ export function addApplication(db: Database, body: unknown) {
 }
 
 export function listApplications(db: Database) {
-  return (db.query(`${LISTED_APPLICATIONS} ORDER BY a.id DESC`).all() as ApplicationRow[]).map(fromRow);
+  const rows = db.query(`${LISTED_APPLICATIONS} ORDER BY id DESC`).all() as ApplicationRow[];
+  const events = db.query(`${LISTED_EVENTS} ${EVENT_ORDER}`).all() as EventRow[];
+
+  const eventsByApplication = Map.groupBy(events, (event) => event.application_id);
+  return rows.map((row) => fromRow(row, eventsByApplication.get(row.id) ?? []));
 }
 
 export function updateApplication(db: Database, id: number, body: unknown) {
@@ -86,18 +100,34 @@ export function updateApplication(db: Database, id: number, body: unknown) {
       db.query(`UPDATE applications SET ${assignments} WHERE id = ?`).run(...changes.map(([, value]) => value), id);
     }
 
-    const row = db.query(`${LISTED_APPLICATIONS} WHERE a.id = ?`).get(id) as ApplicationRow;
-    return { application: fromRow(row), fields: changes.map(([field]) => field) };
+    const row = db.query(`${LISTED_APPLICATIONS} WHERE id = ?`).get(id) as ApplicationRow;
+    const events = db.query(`${LISTED_EVENTS} WHERE application_id = ? ${EVENT_ORDER}`).all(id) as EventRow[];
+    return { application: fromRow(row, events), fields: changes.map(([field]) => field) };
   })();
 }
 
 export function addStatusEvent(db: Database, applicationId: number, body: unknown) {
-  const status = validateEvent(body);
+  const { status, at } = validateEvent(body);
   if (db.query("SELECT 1 FROM applications WHERE id = ?").get(applicationId) === null) return null;
 
   return db
-    .query("INSERT INTO status_events (application_id, status) VALUES (?, ?) RETURNING id, status, at")
-    .get(applicationId, status) as StatusEvent;
+    .query("INSERT INTO status_events (application_id, status, at) VALUES (?, ?, ?) RETURNING id, status, at")
+    .get(applicationId, status, at) as StatusEvent;
+}
+
+// Undo targets the last event recorded, not the latest by date, so undoing a backdated event works.
+export function deleteStatusEvent(db: Database, applicationId: number, eventId: number): StatusEvent | EventRefusal {
+  return db.transaction(() => {
+    const found = db.query("SELECT 1 FROM status_events WHERE id = ? AND application_id = ?").get(eventId, applicationId);
+    if (found === null) return "missing";
+
+    const { lastRecorded } = db
+      .query("SELECT MAX(id) AS lastRecorded FROM status_events WHERE application_id = ?")
+      .get(applicationId) as { lastRecorded: number };
+    if (lastRecorded !== eventId) return "not_last_recorded";
+
+    return db.query("DELETE FROM status_events WHERE id = ? RETURNING id, status, at").get(eventId) as StatusEvent;
+  })();
 }
 
 function validateNew(body: unknown): NewApplication {
@@ -127,10 +157,18 @@ function validateEdit(body: unknown) {
     .map(([field, parse]) => [field, parse(input[field], field)] as const);
 }
 
-function validateEvent(body: unknown) {
-  const { status } = objectOf(body, "Status event");
-  if (!STATUSES.includes(status as Status)) throw new Error(`status must be one of ${STATUSES.join(", ")}`);
-  return status as Status;
+function validateEvent(body: unknown): NewEvent {
+  const { status: value, at } = objectOf(body, "Status event");
+  if (!STATUSES.includes(value as Status)) throw new Error(`status must be one of ${STATUSES.join(", ")}`);
+  const status = value as Status;
+
+  const now = Date.now();
+  if (at === undefined || at === null) return { status, at: new Date(now).toISOString() };
+
+  const time = typeof at === "string" && ISO_TIMESTAMP.test(at) ? Date.parse(at) : NaN;
+  if (!Number.isFinite(time)) throw new Error("at must be an ISO timestamp");
+  if (time > now) throw new Error("at must not be in the future");
+  return { status, at: new Date(time).toISOString() };
 }
 
 function objectOf(body: unknown, name: string) {
@@ -138,8 +176,13 @@ function objectOf(body: unknown, name: string) {
   return body as Record<string, unknown>;
 }
 
-function fromRow(row: ApplicationRow): Application {
-  return { ...row, cover_letter_sent: row.cover_letter_sent === 1, contacts: JSON.parse(row.contacts) };
+function fromRow(row: ApplicationRow, events: EventRow[]): Application {
+  return {
+    ...row,
+    cover_letter_sent: row.cover_letter_sent === 1,
+    contacts: JSON.parse(row.contacts),
+    events: events.map(({ id, status, at }) => ({ id, status, at })),
+  };
 }
 
 function optionalText(value: unknown, field: string) {

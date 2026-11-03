@@ -5,7 +5,7 @@ import { buildLatexFromMatcherResult, type MatcherJsonResult } from "./latex";
 import { openDatabase } from "./db";
 import { readResume, syncResume } from "./resume";
 import { readProfile, writeProfile } from "./profile";
-import { addApplication, addStatusEvent, listApplications, updateApplication } from "./applications";
+import { addApplication, addStatusEvent, deleteStatusEvent, listApplications, updateApplication } from "./applications";
 
 const ROOT = join(import.meta.dir, "..");
 const JOB = join(ROOT, "data/job.txt");
@@ -147,11 +147,25 @@ Bun.serve({
         try {
           const event = addStatusEvent(db, id, await jsonBody(req));
           if (!event) return fail(req, "Application not found", 404);
-          console.log(`POST /api/applications/${id}/events status=${event.status}`);
+          console.log(`POST /api/applications/${id}/events id=${event.id} status=${event.status} at=${event.at}`);
           return Response.json(event, { status: 201 });
         } catch (e) {
           return fail(req, e, 400);
         }
+      },
+    },
+    "/api/applications/:id/events/:eventId": {
+      DELETE: (req) => {
+        const applicationId = idOf(req.params.id);
+        const eventId = idOf(req.params.eventId);
+        if (applicationId === null || eventId === null) return fail(req, "Status event not found", 404);
+
+        const removed = deleteStatusEvent(db, applicationId, eventId);
+        if (removed === "missing") return fail(req, "Status event not found", 404);
+        if (removed === "not_last_recorded") return fail(req, "Only the last recorded status event can be undone", 409);
+
+        console.log(`DELETE /api/applications/${applicationId}/events/${removed.id} status=${removed.status} at=${removed.at}`);
+        return new Response(null, { status: 204 });
       },
     },
     "/api/job": {
