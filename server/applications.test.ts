@@ -64,6 +64,13 @@ describe("addApplication", () => {
     expect(() => db.run("INSERT INTO applications (link) VALUES ('https://acme.com/1')")).toThrow();
   });
 
+  test("stores the application fields sent beside the posting", () => {
+    const db = open();
+    const fields = { company: " Acme ", position_title: "SWE", pay_low: 100, pay_high: 120, location: "Austin", deadline: "2026-12-01" };
+    const { id } = addApplication(db, { text: "Job", link: "https://acme.com/1", ...fields });
+    expect(listApplications(db).find((application) => application.id === id)).toMatchObject({ ...fields, company: "Acme" });
+  });
+
   test("text padded past the limit is measured after trimming", () => {
     const db = open();
     const { created } = addApplication(db, { text: `  ${"x".repeat(200_000)}  ` });
@@ -79,6 +86,9 @@ describe("addApplication", () => {
     ["link must be a URL", { text: "Job", link: "not a url" }],
     ["link must be http or https", { text: "Job", link: "javascript:alert(1)" }],
     ["link must be http or https", { text: "Job", link: "ftp://acme.com/job" }],
+    ["pay_low must not exceed pay_high", { text: "Job", pay_low: 50, pay_high: 40 }],
+    ["pay_low must be a non-negative number", { text: "Job", pay_low: "40" }],
+    ["unknown field description", { text: "Job", description: "Job" }],
   ])("rejects with '%s' and writes nothing", (message, body) => {
     const db = open();
     expect(() => addApplication(db, body)).toThrow(message);

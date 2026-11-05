@@ -2,47 +2,51 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* Dark only: shadcn's dark: classes always apply instead of following the OS setting. */
+@custom-variant dark (&);
 
 @theme {
-  --color-ink: #e6edf3;
-  --color-panel: #0d1117;
-  --color-edge: #1f2a37;
-  --color-neon: #00e5ff;
-  --color-danger: #ff5c7a;
-  --font-mono: ui-monospace, "JetBrains Mono", Menlo, monospace;
-}
+  --color-ground: #0d1116;
+  --color-panel: #141a21;
+  --color-raised: #1b232c;
+  --color-trace: #263039;
+  --color-edge: #5b6875;
+  --color-ink: #e7ecf1;
+  --color-dim: #9ca8b4;
+  --color-signal: #f2a93b;
+  --color-fault: #ff7a70;
+  --color-paper: #ffffff;
 
-html,
-body,
-#root {
-  height: 100%;
-}
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-body {
-  margin: 0;
-  color-scheme: dark;
-  background: #05070a;
-  color: var(--color-ink);
-  font-family: var(--font-mono);
+  /* Ratio 1.25 on 16 px; xs and sm share the smallest step so no component falls off the scale. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.5;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.5;
+  --text-2xl: 1.5625rem;
+  --text-2xl--line-height: 1.2;
+  --text-3xl: 1.9375rem;
+  --text-3xl--line-height: 1.2;
+
+  --shadow-pad-glow: 0 0 0 3px rgb(242 169 59 / 0.22), 0 0 10px rgb(242 169 59 / 0.55);
+
+  --animate-route-draw: route-draw 200ms ease-out;
+
+  @keyframes route-draw {
+    from {
+      transform: scaleX(0);
+    }
+  }
 }
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-sans: var(--font-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -65,88 +69,60 @@ body {
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: var(--color-panel);
+  --foreground: var(--color-ink);
+  --card: var(--color-panel);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-raised);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-signal);
+  --primary-foreground: var(--color-ground);
+  --secondary: var(--color-raised);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-raised);
+  --muted-foreground: var(--color-dim);
+  --accent: var(--color-raised);
+  --accent-foreground: var(--color-ink);
+  --destructive: var(--color-fault);
+  --border: var(--color-trace);
+  --input: var(--color-edge);
+  --ring: var(--color-signal);
+  --radius: 0.25rem;
 }
 
-.dark {
-  --background: #05070a;
-  --foreground: #e6edf3;
-  --card: #0d1117;
-  --card-foreground: #e6edf3;
-  --popover: #0d1117;
-  --popover-foreground: #e6edf3;
-  --primary: #00e5ff;
-  --primary-foreground: #000;
-  --secondary: #111821;
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: #111821;
-  --muted-foreground: #6b7785;
-  --accent: #111821;
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: #ff5c7a;
-  --border: #1f2a37;
-  --input: #1f2a37;
-  --ring: #00e5ff;
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+html,
+body,
+#root {
+  height: 100%;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-ground text-base text-foreground;
+    margin: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-route-draw {
+    animation: none;
+  }
+}
+
+/* Below lg the bottom nav bar and the detail page's sticky Save footer sit where toasts land; Sonner sets these vars inline, hence !important. */
+@media (max-width: 1023px) {
+  [data-sonner-toaster] {
+    --offset-bottom: 9.5rem !important;
+    --mobile-offset-bottom: 9.5rem !important;
   }
 }

@@ -11,6 +11,7 @@ const ROOT = join(import.meta.dir, "..");
 const JOB = join(ROOT, "data/job.txt");
 const OUTPUT = join(ROOT, "output");
 const PORT = Number(process.env.PORT ?? 3000);
+await mkdir(join(ROOT, "data"), { recursive: true });
 const db = openDatabase(join(ROOT, "data/ghostwriter.db"));
 const MODEL = process.env.OPENROUTER_MODEL ?? "arcee-ai/trinity-large-preview:free";
 

@@ -60,16 +60,22 @@ type NewEvent = { status: Status; at: string };
 type EventRefusal = "missing" | "not_last_recorded";
 
 export function addApplication(db: Database, body: unknown) {
-  const { description, link, source } = validateNew(body);
+  const { text, link: linkInput, ...fields } = objectOf(body, "Application");
+  const { description, link, source } = validateNew(text, linkInput);
+  const changes = validateEdit(fields);
+  const edits = Object.fromEntries(changes);
+  checkPayRange(edits.pay_low ?? null, edits.pay_high ?? null);
 
   if (link) {
     const existing = db.query("SELECT id FROM applications WHERE link = ?").get(link) as { id: number } | null;
     if (existing) return { id: existing.id, created: false };
   }
 
+  const columns = ["description", "link", "source", ...changes.map(([field]) => field)];
+  const values = [description, link, source, ...changes.map(([, value]) => value)];
   const { id } = db
-    .query("INSERT INTO applications (description, link, source) VALUES (?, ?, ?) RETURNING id")
-    .get(description, link, source) as { id: number };
+    .query(`INSERT INTO applications (${columns.join(", ")}) VALUES (${columns.map(() => "?").join(", ")}) RETURNING id`)
+    .get(...values) as { id: number };
   return { id, created: true };
 }
 
@@ -89,11 +95,7 @@ export function updateApplication(db: Database, id: number, body: unknown) {
     if (!stored) return null;
 
     const edits = Object.fromEntries(changes);
-    const low = "pay_low" in edits ? edits.pay_low : stored.pay_low;
-    const high = "pay_high" in edits ? edits.pay_high : stored.pay_high;
-    if (typeof low === "number" && typeof high === "number" && low > high) {
-      throw new Error("pay_low must not exceed pay_high");
-    }
+    checkPayRange("pay_low" in edits ? edits.pay_low : stored.pay_low, "pay_high" in edits ? edits.pay_high : stored.pay_high);
 
     if (changes.length) {
       const assignments = changes.map(([field]) => `${field} = ?`).join(", ");
@@ -130,9 +132,7 @@ export function deleteStatusEvent(db: Database, applicationId: number, eventId: 
   })();
 }
 
-function validateNew(body: unknown): NewApplication {
-  const { text, link } = objectOf(body, "Application");
-
+function validateNew(text: unknown, link: unknown): NewApplication {
   if (typeof text !== "string" || !text.trim()) throw new Error("text must be a non-empty string");
   const description = text.trim();
   if (description.length > MAX_DESCRIPTION_CHARS) throw new Error(`text is over ${MAX_DESCRIPTION_CHARS} characters`);
@@ -155,6 +155,10 @@ function validateEdit(body: unknown) {
   return Object.entries(EDITABLE_FIELDS)
     .filter(([field]) => input[field] !== undefined)
     .map(([field, parse]) => [field, parse(input[field], field)] as const);
+}
+
+function checkPayRange(low: StoredValue, high: StoredValue) {
+  if (typeof low === "number" && typeof high === "number" && low > high) throw new Error("pay_low must not exceed pay_high");
 }
 
 function validateEvent(body: unknown): NewEvent {

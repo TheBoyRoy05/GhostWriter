@@ -41,7 +41,7 @@ async function sendJob() {
     func: () => document.body.innerText,
   });
   await post("/api/job", "POST", { text: `${tab.url}\n\n${result}` });
-  await focusApp();
+  await focusApp("/new");
 }
 
 function waitForLoad(tabId) {
@@ -55,13 +55,13 @@ function waitForLoad(tabId) {
   });
 }
 
-async function focusApp() {
+async function focusApp(path) {
   const [existing] = await chrome.tabs.query({ url: `${APP}/*` });
   if (existing) {
     await chrome.windows.update(existing.windowId, { focused: true });
-    return chrome.tabs.update(existing.id, { active: true });
+    return chrome.tabs.update(existing.id, path ? { active: true, url: `${APP}${path}` } : { active: true });
   }
-  const tab = await chrome.tabs.create({ url: APP });
+  const tab = await chrome.tabs.create({ url: `${APP}${path ?? ""}` });
   await waitForLoad(tab.id);
   return tab;
 }
