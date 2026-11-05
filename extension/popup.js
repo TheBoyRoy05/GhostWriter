@@ -12,4 +12,5 @@ function send(msg, pending) {
 }
 
 $("scrape").onclick = () => send({ type: "START_SCRAPE", linkedin: $("linkedin").value.trim() }, "Opening LinkedIn…");
-$("job").onclick = () => send({ type: "SEND_JOB" }, "Sending…");
+$("apply").onclick = () => send({ type: "APPLY" }, "Sending…");
+$("paste").onclick = () => send({ type: "SEND_PASTE", description: $("description").value.trim(), link: $("link").value.trim() }, "Sending…");

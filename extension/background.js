@@ -1,3 +1,5 @@
+import { pageJob, pastedJob } from "./src/job.js";
+
 const SERVER = "http://127.0.0.1:3000";
 const APP = "http://127.0.0.1:5173";
 
@@ -34,13 +36,20 @@ async function startScrape(input) {
   await chrome.tabs.create({ url: linkedinUrl.replace(/\/?$/, "/"), active: true });
 }
 
-async function sendJob() {
+async function applyToPage() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const [{ result }] = await chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    func: () => document.body.innerText,
+    func: () => ({
+      text: document.body.innerText,
+      ldJsonScripts: [...document.querySelectorAll('script[type="application/ld+json"]')].map((s) => s.textContent),
+    }),
   });
-  await post("/api/job", "POST", { text: `${tab.url}\n\n${result}` });
+  await sendJob(pageJob(tab.url, result.text, result.ldJsonScripts));
+}
+
+async function sendJob(job) {
+  await post("/api/job", "POST", job);
   await focusApp("/new");
 }
 
@@ -88,7 +97,8 @@ async function saveScrape(resume, scrapeTab) {
 
 const handlers = {
   START_SCRAPE: (msg) => startScrape(msg.linkedin),
-  SEND_JOB: () => sendJob(),
+  APPLY: () => applyToPage(),
+  SEND_PASTE: (msg) => sendJob(pastedJob(msg.description, msg.link)),
   PAGE_SCRAPED: (msg) => console.log(`[scrape] ${msg.page}: ${msg.entries} entries${msg.spans === undefined ? "" : `, ${msg.spans} spans`}`),
   SCRAPE_COMPLETE: (msg, sender) => saveScrape(msg.data, sender.tab),
   SCRAPE_FAILED: (msg, sender) => finishScrape(sender.tab, `GhostWriter: Scrape failed - ${msg.error}`),
