@@ -1,4 +1,5 @@
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
+import { EXTRACTED_FIELDS, type ExtractedFields, type Extraction } from "../shared/applications";
 import { localDay } from "../web/src/lib/format";
 
 export const WRITTEN = {
@@ -38,8 +39,14 @@ export async function addStop(page: Page, status: string) {
   await page.getByRole("menuitem", { name: status, exact: true }).click();
 }
 
-// Callers stub /api/generate first, since the real one calls OpenRouter.
-export async function openNew(page: Page, posting: string) {
+export const extractionOf = (fields: Partial<ExtractedFields> = {}): Extraction => ({
+  fields: { ...Object.fromEntries(EXTRACTED_FIELDS.map((field) => [field, null])), ...fields } as ExtractedFields,
+  error: null,
+});
+
+// Callers stub /api/generate first, since the real one calls OpenRouter; /api/extract is stubbed here for the same reason.
+export async function openNew(page: Page, posting: string, extracted: Partial<ExtractedFields> = {}) {
+  await page.route("**/api/extract", (route) => route.fulfill({ json: extractionOf(extracted) }));
   await page.request.post("/api/job", { data: { text: posting } });
   await page.goto("/new");
 }

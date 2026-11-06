@@ -2,20 +2,36 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { request, sendJson } from "@/lib/api";
-import { amountOf } from "@/lib/format";
+import { amountOf, labelOf } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { COVER_LETTERS, PAY_UNITS, type Application, type ExtractedFields, type Extraction } from "../../shared/applications";
 import type { AddedState } from "./ApplicationList";
 import Field, { errorIdOf } from "./Field";
 import { saveDraft, type Draft } from "./ResumeView";
 
-type Fields = Record<"company" | "position_title" | "pay_low" | "pay_high" | "location" | "deadline" | "link", string>;
+type Fields = Record<keyof ExtractedFields | "link", string>;
 type PayKey = "pay_low" | "pay_high";
+type ChoiceKey = "pay_unit" | "cover_letter";
 type Posting = { state: "loading" } | { state: "failed"; error: string } | { state: "loaded" };
 type Resume = { job: string } & ({ state: "writing" } | { state: "written"; latex: string } | { state: "failed"; error: string });
 
-const NO_FIELDS: Fields = { company: "", position_title: "", pay_low: "", pay_high: "", location: "", deadline: "", link: "" };
+const PAY_GROUP = ["pay_low", "pay_high", "pay_unit"] as const;
+
+const NO_FIELDS: Fields = {
+  company: "",
+  position_title: "",
+  pay_low: "",
+  pay_high: "",
+  pay_unit: "",
+  location: "",
+  req_id: "",
+  deadline: "",
+  cover_letter: "",
+  link: "",
+};
 
 export default function NewApplication() {
   const [, navigate] = useLocation();
@@ -23,23 +39,42 @@ export default function NewApplication() {
   const [text, setText] = useState("");
   const [fields, setFields] = useState(NO_FIELDS);
   const [resume, setResume] = useState<Resume>();
+  const [extractingJob, setExtractingJob] = useState<string>();
+  const [extractError, setExtractError] = useState<{ job: string; message: string }>();
+  const [applications, setApplications] = useState<Application[]>([]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   // A result written from superseded text must not replace the current one.
   const latestJob = useRef<string>(undefined);
+  // The JSON-LD describes only the text it was captured with, never an edit or paste.
+  const captured = useRef<{ job: string; jobPosting: unknown }>(undefined);
+  // Read by extract() after its await, when the `text` it closed over may be stale.
+  const textRef = useRef("");
+  const extractedJob = useRef<string>(undefined);
+
+  useEffect(() => {
+    textRef.current = text;
+  }, [text]);
 
   useEffect(() => {
     let unmounted = false;
 
-    request("/api/job").then(async (result) => {
+    Promise.all([request("/api/job"), request("/api/job-posting")]).then(async ([result, postingResult]) => {
       if (unmounted) return;
       if (!result.ok) return setPosting({ state: "failed", error: result.error });
 
       const job = await result.res.text();
+      // Without the JSON-LD posting the model reads every field from the text, so losing it is not fatal.
+      captured.current = { job, jobPosting: postingResult.ok ? await postingResult.res.json() : null };
       setPosting({ state: "loaded" });
       setText(job);
       setFields((f) => ({ ...f, link: f.link || linkOf(job) }));
       if (job.trim()) write(job);
+    });
+
+    request("/api/applications").then(async (result) => {
+      if (unmounted || !result.ok) return;
+      setApplications(await result.res.json());
     });
 
     return () => {
@@ -50,14 +85,34 @@ export default function NewApplication() {
   async function write(job: string) {
     latestJob.current = job;
     setResume({ job, state: "writing" });
+    extract(job);
     const result = await sendJson("POST", "/api/generate", { job });
     if (latestJob.current !== job) return;
     if (!result.ok) return setResume({ job, state: "failed", error: result.error });
 
     const written: Draft = await result.res.json();
     if (latestJob.current !== job) return;
-    setFields((f) => ({ ...f, company: f.company || written.company, position_title: f.position_title || written.role }));
     setResume({ job, state: "written", latex: written.latex });
+  }
+
+  async function extract(job: string) {
+    // A resume retry on the same text would spend a second model call that can 429 over filled fields.
+    if (extractedJob.current === job) return;
+    extractedJob.current = job;
+    setExtractingJob(job);
+    setExtractError(undefined);
+    const jobPosting = captured.current?.job === job ? captured.current.jobPosting : null;
+
+    const result = await sendJson("POST", "/api/extract", { text: job, jobPosting });
+    const { fields: extracted, error }: Partial<Extraction> = result.ok ? await result.res.json() : { error: result.error };
+    setExtractingJob((j) => (j === job ? undefined : j));
+
+    const dropped = textRef.current !== job;
+    // Nothing was filled from this text, so the next Write resume on it extracts again.
+    if ((dropped || !result.ok) && extractedJob.current === job) extractedJob.current = undefined;
+    if (dropped) return console.info("extraction dropped: the posting text changed while it ran");
+    if (extracted) setFields((f) => prefilled(f, extracted));
+    if (error) setExtractError({ job, message: error });
   }
 
   const current = resume?.job === text ? resume : undefined;
@@ -65,12 +120,14 @@ export default function NewApplication() {
   const payInvalid = Number.isNaN(pay.pay_low) || Number.isNaN(pay.pay_high);
   const canAdd = !saving && !payInvalid && text.trim() !== "";
   const progress = progressOf(posting, text, current);
+  const repost = applications.find((a) => sameText(a.company, fields.company) && sameText(a.position_title, fields.position_title));
 
   async function confirm(latex?: string) {
     setSaving(true);
     setError("");
 
-    const result = await sendJson("POST", "/api/applications", { text, ...fields, ...pay });
+    const choices = { pay_unit: fields.pay_unit || null, cover_letter: fields.cover_letter || null };
+    const result = await sendJson("POST", "/api/applications", { text, ...fields, ...pay, ...choices });
     if (!result.ok) {
       setSaving(false);
       return setError(result.error);
@@ -90,7 +147,7 @@ export default function NewApplication() {
 
   const set = (key: keyof Fields, value: string) => setFields((f) => ({ ...f, [key]: value }));
 
-  const textInput = (key: Exclude<keyof Fields, PayKey>, label: string, type = "text") => (
+  const textInput = (key: Exclude<keyof Fields, PayKey | ChoiceKey>, label: string, type = "text") => (
     <Field id={`new-${key}`} label={label}>
       <Input id={`new-${key}`} type={type} className={cn(type === "date" && "font-mono")} value={fields[key]} onChange={(e) => set(key, e.target.value)} />
     </Field>
@@ -113,6 +170,19 @@ export default function NewApplication() {
       </Field>
     );
   };
+
+  const choiceInput = (key: ChoiceKey, label: string, options: readonly string[]) => (
+    <Field id={`new-${key}`} label={label}>
+      <NativeSelect id={`new-${key}`} className="w-full" value={fields[key]} onChange={(e) => set(key, e.target.value)}>
+        <NativeSelectOption value="">Not set</NativeSelectOption>
+        {options.map((option) => (
+          <NativeSelectOption key={option} value={option}>
+            {labelOf(option)}
+          </NativeSelectOption>
+        ))}
+      </NativeSelect>
+    </Field>
+  );
 
   return (
     <form onSubmit={submit} className="grid h-full grid-cols-[minmax(0,1fr)_28rem]">
@@ -138,14 +208,27 @@ export default function NewApplication() {
               Write resume
             </Button>
           )}
+          {extractingJob !== undefined && <p className="text-sm text-dim">Filling fields…</p>}
+          {extractError?.job === text && <p className="text-sm text-fault">Could not fill the fields: {extractError.message}</p>}
           {textInput("company", "Company")}
           {textInput("position_title", "Position title")}
-          <div className="grid grid-cols-2 gap-3">
+          {repost && (
+            <p role="note" className="border-l-2 border-ink pl-3">
+              You already track this company and title, maybe from another link.{" "}
+              <Link className="text-signal underline-offset-4 hover:underline" href={`/applications/${repost.id}`}>
+                Open it
+              </Link>
+            </p>
+          )}
+          {textInput("req_id", "Req ID")}
+          <div className="grid grid-cols-3 gap-3">
             {payInput("pay_low", "Pay low")}
             {payInput("pay_high", "Pay high")}
+            {choiceInput("pay_unit", "Per", PAY_UNITS)}
           </div>
           {textInput("location", "Location")}
           {textInput("deadline", "Deadline", "date")}
+          {choiceInput("cover_letter", "Cover letter", COVER_LETTERS)}
           {textInput("link", "Link", "url")}
         </div>
 
@@ -181,6 +264,17 @@ function progressOf(posting: Posting, text: string, resume: Resume | undefined) 
   if (resume.state === "failed") return { text: `Writing failed: ${resume.error}`, error: true };
   return { text: "Resume written. Confirm to open it." };
 }
+
+function prefilled(fields: Fields, extracted: ExtractedFields): Fields {
+  // A range mixed from typed and extracted values can come out inverted or in the wrong unit.
+  const payTyped = PAY_GROUP.some((key) => fields[key] !== "");
+  const filled = Object.entries(extracted)
+    .filter(([key]) => !(payTyped && (PAY_GROUP as readonly string[]).includes(key)))
+    .map(([key, value]) => [key, fields[key as keyof ExtractedFields] || (value === null ? "" : String(value))]);
+  return { ...fields, ...Object.fromEntries(filled) };
+}
+
+const sameText = (stored: string | null, typed: string) => typed.trim() !== "" && stored?.trim().toLowerCase() === typed.trim().toLowerCase();
 
 // The extension puts the page's URL on the posting's first line.
 function linkOf(job: string) {

@@ -5,15 +5,17 @@ import { buildLatexFromMatcherResult, type MatcherJsonResult } from "./latex";
 import { openDatabase } from "./db";
 import { readResume, syncResume } from "./resume";
 import { readProfile, writeProfile } from "./profile";
+import { extractFields } from "./extract";
+import { askOpenRouter } from "./openrouter";
 import { addApplication, addStatusEvent, deleteStatusEvent, listApplications, updateApplication } from "./applications";
 
 const ROOT = join(import.meta.dir, "..");
 const JOB = join(ROOT, "data/job.txt");
+const JOB_POSTING = join(ROOT, "data/job-posting.json");
 const OUTPUT = join(ROOT, "output");
 const PORT = Number(process.env.PORT ?? 3000);
 await mkdir(join(ROOT, "data"), { recursive: true });
 const db = openDatabase(join(ROOT, "data/ghostwriter.db"));
-const MODEL = process.env.OPENROUTER_MODEL ?? "arcee-ai/trinity-large-preview:free";
 
 async function writeAtomic(path: string, data: string) {
   await Bun.write(`${path}.tmp`, data);
@@ -22,31 +24,14 @@ async function writeAtomic(path: string, data: string) {
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "untitled";
 
-function stripCodeFence(text: string) {
-  return text.replace(/^\s*```(?:json)?\s*/, "").replace(/\s*```\s*$/, "").trim();
-}
-
 async function generate(job: string) {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error("OPENROUTER_API_KEY not set in .env");
   const resume = readResume(db);
   if (resume.experiences.length === 0) throw new Error("No resume in the database yet; run the LinkedIn scrape first");
   const profile = readProfile(db);
   if (!profile?.name) throw new Error("Fill in your profile first (Profile button, top right)");
 
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: [{ role: "user", content: buildPrompt(job, resume) }],
-      max_tokens: 8192,
-      temperature: 0.7,
-    }),
-  });
-  if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${await res.text()}`);
-  const content = (await res.json())?.choices?.[0]?.message?.content ?? "";
-  const result: MatcherJsonResult & { company?: string; role?: string } = JSON.parse(stripCodeFence(content));
+  const options = { maxTokens: 8192, temperature: 0.7 };
+  const result = (await askOpenRouter(buildPrompt(job, resume), options)) as MatcherJsonResult & { company?: string; role?: string };
 
   return {
     company: result.company ?? "",
@@ -78,6 +63,12 @@ function fail(req: Request, err: unknown, status = 500) {
   const error = err instanceof Error ? err.message : String(err);
   console.warn(`${req.method} ${new URL(req.url).pathname} ${status}: ${error}`);
   return Response.json({ error }, { status });
+}
+
+function jobPostingOf(value: unknown) {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "object" || Array.isArray(value)) throw new Error("jobPosting must be an object or null");
+  return value as Record<string, unknown>;
 }
 
 // Number() would also accept "0x1", "1e0" and " 1", so one row would answer to several URLs.
@@ -176,9 +167,30 @@ Bun.serve({
       },
       POST: async (req) => {
         try {
-          const { text } = await jsonBody(req);
+          const { text, jobPosting } = await jsonBody(req);
+          const posting = jobPostingOf(jobPosting);
+          // Written even when null, so a posting captured earlier never pairs with this text.
+          await writeAtomic(JOB_POSTING, JSON.stringify(posting));
           await writeAtomic(JOB, String(text ?? ""));
+          console.log(`POST /api/job json-ld=${posting ? "yes" : "no"}`);
           return Response.json({ ok: true });
+        } catch (e) {
+          return fail(req, e, 400);
+        }
+      },
+    },
+    "/api/job-posting": {
+      GET: async () => {
+        const file = Bun.file(JOB_POSTING);
+        return (await file.exists()) ? new Response(file, { headers: { "Content-Type": "application/json" } }) : Response.json(null);
+      },
+    },
+    "/api/extract": {
+      POST: async (req) => {
+        try {
+          const { text, jobPosting } = await jsonBody(req);
+          if (typeof text !== "string") throw new Error("text must be a string");
+          return Response.json(await extractFields(text, jobPostingOf(jobPosting)));
         } catch (e) {
           return fail(req, e, 400);
         }

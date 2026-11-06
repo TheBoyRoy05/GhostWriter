@@ -1,26 +1,175 @@
 import { expect, test, type Page } from "@playwright/test";
 import type { Application } from "../shared/applications";
-import { WRITTEN, addStop, createApplication, dayOffset, openNew, uniqueLink } from "./fixtures";
+import { WRITTEN, addStop, createApplication, dayOffset, extractionOf, openNew, uniqueLink } from "./fixtures";
 
 const toast = (page: Page) => page.locator("[data-sonner-toast]");
 
-test("a sent posting prefills its link, and the written resume fills only the fields left blank", async ({ page }) => {
+test("a sent posting prefills its link, and extraction fills only the fields left blank", async ({ page }) => {
   const link = uniqueLink();
-  let finishWriting = () => {};
-  const writingHeld = new Promise<void>((resolve) => (finishWriting = resolve));
-  await page.route("**/api/generate", async (route) => {
-    await writingHeld;
-    await route.fulfill({ json: WRITTEN });
+  const text = `${link}\n\nBuild test frameworks for game engines.`;
+  const jobPosting = { "@type": "JobPosting", title: "Test engineer" };
+  const extracted = { company: "Acme Robotics", position_title: "Test engineer", pay_low: 120000, pay_unit: "year", req_id: "R-1", cover_letter: "required" } as const;
+  const requests: unknown[] = [];
+  let finishExtracting = () => {};
+  const extractingHeld = new Promise<void>((resolve) => (finishExtracting = resolve));
+  await page.route("**/api/generate", (route) => route.fulfill({ json: WRITTEN }));
+  await page.route("**/api/extract", async (route) => {
+    requests.push(route.request().postDataJSON());
+    await extractingHeld;
+    await route.fulfill({ json: extractionOf(extracted) });
   });
-  await openNew(page, `${link}\n\nBuild test frameworks for game engines.`);
+  await page.request.post("/api/job", { data: { text, jobPosting } });
+  await page.goto("/new");
 
   await expect(page.getByLabel("Link")).toHaveValue(link);
-  await expect(page.getByRole("status")).toHaveText("Writing the resume…");
+  await expect(page.getByRole("status")).toHaveText("Resume written. Confirm to open it.");
+  await expect(page.getByText("Filling fields…")).toBeVisible();
   await page.getByLabel("Company").fill("Typed Company");
-  finishWriting();
+  finishExtracting();
 
-  await expect(page.getByLabel("Position title")).toHaveValue(WRITTEN.role);
+  await expect(page.getByText("Filling fields…")).toBeHidden();
+  await expect(page.getByLabel("Position title")).toHaveValue(extracted.position_title);
+  await expect(page.getByLabel("Pay low")).toHaveValue("120000");
+  await expect(page.getByLabel("Pay high")).toHaveValue("");
+  await expect(page.getByLabel("Per", { exact: true })).toHaveValue("year");
+  await expect(page.getByLabel("Req ID")).toHaveValue("R-1");
+  await expect(page.getByLabel("Cover letter")).toHaveValue("required");
   await expect(page.getByLabel("Company")).toHaveValue("Typed Company");
+  expect(requests).toEqual([{ text, jobPosting }]);
+});
+
+test("a posting with a tracked company and title shows a repost notice that does not block Confirm", async ({ page }) => {
+  const company = `Repost ${crypto.randomUUID()}`;
+  const id = await createApplication(page.request, { company, position_title: "Test engineer" });
+  await page.route("**/api/generate", (route) => route.fulfill({ json: WRITTEN }));
+  await openNew(page, `${uniqueLink()}\n\nThe same job under a new link.`, { company, position_title: "test engineer" });
+
+  const notice = page.getByRole("note");
+  await expect(notice).toContainText("You already track this company and title");
+  await expect(notice.getByRole("link", { name: "Open it" })).toHaveAttribute("href", `/applications/${id}`);
+  await expect(page.getByRole("button", { name: "Confirm", exact: true })).toBeEnabled();
+
+  await page.getByLabel("Position title").fill("Senior test engineer");
+  await expect(notice).toBeHidden();
+});
+
+test("rewriting an edited posting extracts from the new text alone, and the stale extraction is ignored", async ({ page }) => {
+  const sent = `${uniqueLink()}\n\nThe posting as sent.`;
+  const edited = "A different posting, pasted in.";
+  const jobPosting = { "@type": "JobPosting", title: "Old title" };
+  const requests: unknown[] = [];
+  let finishFirst = () => {};
+  const firstHeld = new Promise<void>((resolve) => (finishFirst = resolve));
+  await page.route("**/api/generate", (route) => route.fulfill({ json: WRITTEN }));
+  await page.route("**/api/extract", async (route) => {
+    const body = route.request().postDataJSON();
+    requests.push(body);
+    if (body.text === edited) return route.fulfill({ json: extractionOf({ company: "New Co" }) });
+    await firstHeld;
+    await route.fulfill({ json: extractionOf({ company: "Old Co", position_title: "Old title" }) });
+  });
+  await page.request.post("/api/job", { data: { text: sent, jobPosting } });
+  await page.goto("/new");
+
+  await expect(page.getByRole("status")).toHaveText("Resume written. Confirm to open it.");
+  await page.getByLabel("Posting").fill(edited);
+  await page.getByRole("button", { name: "Write resume" }).click();
+  await expect(page.getByLabel("Company")).toHaveValue("New Co");
+  const firstDropped = extractionDropped(page);
+  finishFirst();
+  await firstDropped;
+
+  await expect(page.getByLabel("Company")).toHaveValue("New Co");
+  await expect(page.getByLabel("Position title")).toHaveValue("");
+  await expect(page.getByText("Filling fields…")).toBeHidden();
+  expect(requests).toEqual([
+    { text: sent, jobPosting },
+    { text: edited, jobPosting: null },
+  ]);
+});
+
+test("an extraction error shows under the status and keeps the fields it did fill", async ({ page }) => {
+  const extraction = { ...extractionOf({ company: "Acme Robotics" }), error: "OpenRouter 429: rate limited" };
+  await page.route("**/api/generate", (route) => route.fulfill({ json: WRITTEN }));
+  await page.route("**/api/extract", (route) => route.fulfill({ json: extraction }));
+  await page.request.post("/api/job", { data: { text: "Acme is hiring." } });
+  await page.goto("/new");
+
+  await expect(page.getByText("Could not fill the fields: OpenRouter 429: rate limited")).toBeVisible();
+  await expect(page.getByLabel("Company")).toHaveValue("Acme Robotics");
+});
+
+test("an extraction that finishes after the posting was edited, without Write resume, fills nothing", async ({ page }) => {
+  let finishExtracting = () => {};
+  const extractingHeld = new Promise<void>((resolve) => (finishExtracting = resolve));
+  await page.route("**/api/generate", (route) => route.fulfill({ json: WRITTEN }));
+  await page.route("**/api/extract", async (route) => {
+    await extractingHeld;
+    await route.fulfill({ json: extractionOf({ company: "Old Co", pay_low: 100000 }) });
+  });
+  await page.request.post("/api/job", { data: { text: "The posting as sent." } });
+  await page.goto("/new");
+
+  await expect(page.getByText("Filling fields…")).toBeVisible();
+  await page.getByLabel("Posting").fill("A different posting, pasted in.");
+  const dropped = extractionDropped(page);
+  finishExtracting();
+  await dropped;
+
+  await expect(page.getByText("Filling fields…")).toBeHidden();
+  await expect(page.getByLabel("Company")).toHaveValue("");
+  await expect(page.getByLabel("Pay low")).toHaveValue("");
+});
+
+test("retrying a failed resume on the same posting does not extract again", async ({ page }) => {
+  let generated = 0;
+  let extracted = 0;
+  await page.route("**/api/generate", (route) => (++generated === 1 ? route.fulfill({ status: 500, json: { error: "model down" } }) : route.fulfill({ json: WRITTEN })));
+  await page.route("**/api/extract", (route) => {
+    extracted++;
+    return route.fulfill({ json: extractionOf({ company: "Acme Robotics" }) });
+  });
+  await page.request.post("/api/job", { data: { text: "Acme is hiring." } });
+  await page.goto("/new");
+
+  await expect(page.getByRole("status")).toHaveText("Writing failed: model down");
+  await expect(page.getByLabel("Company")).toHaveValue("Acme Robotics");
+  await page.getByRole("button", { name: "Write resume" }).click();
+
+  await expect(page.getByRole("status")).toHaveText("Resume written. Confirm to open it.");
+  expect(extracted).toBe(1);
+});
+
+test("an extraction HTTP failure shows under the status and fills nothing", async ({ page }) => {
+  await page.route("**/api/generate", (route) => route.fulfill({ json: WRITTEN }));
+  await page.route("**/api/extract", (route) => route.fulfill({ status: 400, json: { error: "text must be a string" } }));
+  await page.request.post("/api/job", { data: { text: "Acme is hiring." } });
+  await page.goto("/new");
+
+  await expect(page.getByText("Could not fill the fields: text must be a string")).toBeVisible();
+  await expect(page.getByText("Filling fields…")).toBeHidden();
+  await expect(page.getByLabel("Company")).toHaveValue("");
+});
+
+test("extraction leaves the whole pay range alone once any part of it is typed", async ({ page }) => {
+  let finishExtracting = () => {};
+  const extractingHeld = new Promise<void>((resolve) => (finishExtracting = resolve));
+  await page.route("**/api/generate", (route) => route.fulfill({ json: WRITTEN }));
+  await page.route("**/api/extract", async (route) => {
+    await extractingHeld;
+    await route.fulfill({ json: extractionOf({ company: "Acme Robotics", pay_high: 150000, pay_unit: "year" }) });
+  });
+  await page.request.post("/api/job", { data: { text: "Acme is hiring." } });
+  await page.goto("/new");
+
+  await expect(page.getByText("Filling fields…")).toBeVisible();
+  await page.getByLabel("Pay low").fill("200000");
+  finishExtracting();
+
+  await expect(page.getByLabel("Company")).toHaveValue("Acme Robotics");
+  await expect(page.getByLabel("Pay low")).toHaveValue("200000");
+  await expect(page.getByLabel("Pay high")).toHaveValue("");
+  await expect(page.getByLabel("Per", { exact: true })).toHaveValue("");
 });
 
 test("Confirm waits for writing, then opens the resume and stores what was typed", async ({ page }) => {
@@ -274,3 +423,5 @@ async function storedApplication(page: Page, link: string) {
   const applications = (await (await page.request.get("/api/applications")).json()) as Application[];
   return applications.find((application) => application.link === link);
 }
+
+const extractionDropped = (page: Page) => page.waitForEvent("console", (message) => message.text().startsWith("extraction dropped"));

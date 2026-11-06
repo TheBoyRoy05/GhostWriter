@@ -34,3 +34,19 @@ export type Application = {
   // Oldest first, so the current status is the last entry.
   events: StatusEvent[];
 };
+
+export const EXTRACTED_FIELDS = [
+  "company",
+  "position_title",
+  "pay_low",
+  "pay_high",
+  "pay_unit",
+  "location",
+  "req_id",
+  "deadline",
+  "cover_letter",
+] as const;
+
+// null means the posting does not state the field.
+export type ExtractedFields = Pick<Application, (typeof EXTRACTED_FIELDS)[number]>;
+export type Extraction = { fields: ExtractedFields; error: string | null };
