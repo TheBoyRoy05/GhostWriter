@@ -3,22 +3,14 @@
 import { readdirSync } from "node:fs";
 import { basename, join } from "node:path";
 import { openDatabase } from "../server/db";
+import { RELEVANCE_LEVELS, scoreQuestions } from "../server/jev";
+import { bulletQuestion } from "../server/select";
 
 const ROOT = join(import.meta.dir, "..");
 const POSTINGS = join(ROOT, "data/postings");
 const SCORES = join(ROOT, "data/scores");
-const MODEL = "typesafe/jev-1.13";
-// Jev caps one request at 32 questions.
-const QUESTIONS_PER_REQUEST = 32;
-const LEVELS = [
-  "Irrelevant to the role",
-  "Loosely related skills",
-  "Clearly relevant to a responsibility or qualification",
-  "Directly demonstrates a core responsibility of the role",
-];
 
 type Bullet = { key: string; kind: string; sourceId: string; index: number; item: string; text: string };
-type ScoreAnswer = { score: number; confidence: number };
 
 function loadBullets(): Bullet[] {
   const db = openDatabase(join(ROOT, "data/ghostwriter.db"));
@@ -39,34 +31,14 @@ function loadBullets(): Bullet[] {
   });
 }
 
-async function scoreBatch(apiKey: string, posting: string, bullets: Bullet[]) {
-  const questions = Object.fromEntries(
-    bullets.map((b) => [
-      b.key,
-      {
-        type: "score",
-        instructions: `How well does this resume bullet match the job posting? ${b.item}. Bullet: ${b.text}`,
-        criteria: LEVELS,
-      },
-    ]),
-  );
-  const res = await fetch("https://openrouter.ai/api/v1/systemone", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: MODEL, state: posting, questions }),
-  });
-  if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${await res.text()}`);
-  return res.json() as Promise<{ answers: Record<string, ScoreAnswer>; provider?: string; usage?: { cost?: number } }>;
-}
-
 async function scorePosting(apiKey: string, file: string, bullets: Bullet[]) {
   const [url, title, ...body] = (await Bun.file(file).text()).split("\n");
   const posting = `${title}\n${body.join("\n").trim()}`;
-  const batches = [];
-  for (let i = 0; i < bullets.length; i += QUESTIONS_PER_REQUEST) batches.push(bullets.slice(i, i + QUESTIONS_PER_REQUEST));
-  const responses = await Promise.all(batches.map((batch) => scoreBatch(apiKey, posting, batch)));
+  const instructions = Object.fromEntries(
+    bullets.map((b) => [b.key, bulletQuestion(b.item, b.text)]),
+  );
+  const { answers, cost, providers } = await scoreQuestions(apiKey, posting, instructions, RELEVANCE_LEVELS);
 
-  const answers = Object.assign({}, ...responses.map((r) => r.answers)) as Record<string, ScoreAnswer>;
   const ranked = bullets
     .map((b) => ({ ...b, score: answers[b.key].score, confidence: answers[b.key].confidence }))
     .sort((a, b) => b.score - a.score);
@@ -74,8 +46,8 @@ async function scorePosting(apiKey: string, file: string, bullets: Bullet[]) {
     posting: basename(file, ".txt"),
     url,
     title,
-    providers: [...new Set(responses.map((r) => r.provider))],
-    cost: responses.reduce((sum, r) => sum + (r.usage?.cost ?? 0), 0),
+    providers,
+    cost,
     ranked,
   };
   await Bun.write(join(SCORES, `${result.posting}.json`), JSON.stringify(result, null, 2));

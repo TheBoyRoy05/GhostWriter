@@ -16,7 +16,7 @@ type Fields = Record<keyof ExtractedFields | "link", string>;
 type PayKey = "pay_low" | "pay_high";
 type ChoiceKey = "pay_unit" | "cover_letter";
 type Posting = { state: "loading" } | { state: "failed"; error: string } | { state: "loaded" };
-type Resume = { job: string } & ({ state: "writing" } | { state: "written"; latex: string } | { state: "failed"; error: string });
+type Resume = { job: string } & ({ state: "writing" } | { state: "written"; latex: string; warning?: string } | { state: "failed"; error: string });
 
 const PAY_GROUP = ["pay_low", "pay_high", "pay_unit"] as const;
 
@@ -90,9 +90,9 @@ export default function NewApplication() {
     if (latestJob.current !== job) return;
     if (!result.ok) return setResume({ job, state: "failed", error: result.error });
 
-    const written: Draft = await result.res.json();
+    const written: Draft & { warning?: string } = await result.res.json();
     if (latestJob.current !== job) return;
-    setResume({ job, state: "written", latex: written.latex });
+    setResume({ job, state: "written", latex: written.latex, warning: written.warning });
   }
 
   async function extract(job: string) {
@@ -255,13 +255,14 @@ export default function NewApplication() {
   );
 }
 
-function progressOf(posting: Posting, text: string, resume: Resume | undefined) {
+export function progressOf(posting: Posting, text: string, resume: Resume | undefined) {
   if (posting.state === "loading") return { text: "Loading the posting…" };
   if (!text.trim() && posting.state === "failed") return { text: posting.error, error: true };
   if (!text.trim()) return { text: "No posting captured. Send one from the extension, or paste it here." };
   if (!resume) return { text: "Write the resume for this posting before confirming." };
   if (resume.state === "writing") return { text: "Writing the resume…" };
   if (resume.state === "failed") return { text: `Writing failed: ${resume.error}`, error: true };
+  if (resume.warning) return { text: `${resume.warning}. Confirm to open it.`, error: true };
   return { text: "Resume written. Confirm to open it." };
 }
 

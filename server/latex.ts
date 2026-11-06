@@ -2,6 +2,7 @@
  * Builds LaTeX from the template.tex structure using matcher result + profile.
  */
 
+import { join } from "node:path";
 import { RESUME_STY } from "./resume-sty";
 
 export interface MatcherJsonResult {
@@ -48,16 +49,22 @@ interface EducationData {
   grade?: string | null;
 }
 
-const escapeLatex = (s: string) =>
-  s
-    .replace(/\\/g, "\\\\")
-    .replace(/&/g, "\\&")
-    .replace(/%/g, "\\%")
-    .replace(/#/g, "\\#")
-    .replace(/\$/g, "\\$")
-    .replace(/_/g, "\\_")
-    .replace(/\{/g, "\\{")
-    .replace(/\}/g, "\\}");
+// One pass, so the braces an escape adds are never escaped again.
+const LATEX_ESCAPES: Record<string, string> = {
+  "\\": "\\textbackslash{}",
+  "^": "\\textasciicircum{}",
+  "~": "\\textasciitilde{}",
+  "&": "\\&",
+  "%": "\\%",
+  "#": "\\#",
+  $: "\\$",
+  _: "\\_",
+  "{": "\\{",
+  "}": "\\}",
+};
+export const escapeLatex = (s: string) => s.replace(/[\\^~&%#$_{}]/g, (char) => LATEX_ESCAPES[char]);
+// hyperref's \href reads its URL verbatim except `#` and `%`, which still end or start TeX syntax.
+const escapeUrl = (url: string) => url.replace(/[#%]/g, (char) => `\\${char}`);
 
 interface ResumeData {
   education?: EducationData[];
@@ -75,26 +82,28 @@ export function buildLatexFromMatcherResult(
   let phone = escapeLatex(profile?.phone || "");
   phone = phone.replace(/^1?(\d{3})(\d{3})(\d{4})$/, "($1) $2-$3");
 
-  const websiteUrl = profile?.personal_website || "#";
+  const websiteUrl = escapeUrl(profile?.personal_website || "#");
   const websiteDisplay = escapeLatex(
     profile?.personal_website
       ? new URL(profile.personal_website).hostname.replace("www.", "")
       : "Website",
   );
-  const githubUrl = profile?.github || "#";
+  const githubUrl = escapeUrl(profile?.github || "#");
   const githubDisplay = escapeLatex(
     profile?.github ? profile.github.replace(/^https?:\/\//, "").replace(/\/$/, "") : "GitHub",
   );
-  const linkedinUrl = profile?.linkedin || "#";
+  const linkedinUrl = escapeUrl(profile?.linkedin || "#");
   const linkedinDisplay = escapeLatex(
     profile?.linkedin
       ? profile.linkedin.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")
       : "LinkedIn",
   );
   const hobbies = escapeLatex(profile?.hobbies || "");
-  const title = escapeLatex(jobTitle || "Your Title");
-  const location = profile?.location;
+  const title = jobTitle ? escapeLatex(jobTitle) : "";
+  const location = escapeLatex(profile?.location || "");
   const citizenship = profile?.citizenship === true;
+  // An empty line ended with \\ is a LaTeX error, so the tagline goes when every part is missing.
+  const tagline = [citizenship && "U.S. Citizen", title, location].filter(Boolean).join(" $|$ ");
 
   const edu = education;
   const eduSchool = escapeLatex(edu?.school || "University");
@@ -121,7 +130,7 @@ ${idx === experiences.length - 1 ? "" : "\\vspace{-15pt}"}
     )
     .join("\n");
 
-  const projectsSection = projects
+  const projectItems = projects
     .map((proj, idx) => {
       const title = escapeLatex(proj.name ?? proj.title ?? "");
 
@@ -137,7 +146,7 @@ ${idx === experiences.length - 1 ? "" : "\\vspace{-15pt}"}
         ? `${escapeLatex(proj.start)}${proj.end ? ` -- ${escapeLatex(proj.end)}` : ""}`
         : "";
       const heading = proj.link
-        ? `\\textbf{\\href{${proj.link}}{\\underline{${title}}}}`
+        ? `\\textbf{\\href{${escapeUrl(proj.link)}}{\\underline{${title}}}}`
         : `\\textbf{${title}}`;
       return `
 \\resumeProjectHeading
@@ -149,6 +158,14 @@ ${idx === projects.length - 1 ? "" : "\\vspace{-15pt}"}
 `;
     })
     .join("\n");
+  // An empty item list is a LaTeX error, and projects may all be dropped.
+  const projectsSection = `%-----------PROJECTS-----------
+\\section{\\textcolor{\\accentColor}{Projects}}
+\\vspace{-7pt}
+\\resumeSubHeadingListStart
+${projectItems}
+\\resumeSubHeadingListEnd
+`;
 
   return `
 \\documentclass[letterpaper,11pt]{article}
@@ -159,7 +176,7 @@ ${RESUME_STY}
 %----------HEADING----------
 \\begin{center}
   {\\Huge \\scshape \\textcolor{\\accentColor}{${name}}} \\\\ \\vspace{1pt}
-  ${citizenship ? "U.S. Citizen $|$ " : ""}${title} ${location ? `$|$ ${location}` : ""} \\\\ \\vspace{1pt}
+  ${tagline ? `${tagline} \\\\ \\vspace{1pt}` : ""}
   \\small \\raisebox{-0.1\\height}{\\href{${websiteUrl}}{\\raisebox{-0.2\\height}\\faGlobe\\ \\underline{${websiteDisplay}}}} ~
     \\href{${githubUrl}}{\\raisebox{-0.2\\height}\\faGithub\\ \\underline{${githubDisplay}}} ~
     \\href{${linkedinUrl}}{\\raisebox{-0.2\\height}\\faLinkedin\\ \\underline{${linkedinDisplay}}} ~ \\href{mailto:${email}}{\\raisebox{-0.2\\height}\\faEnvelope\\ \\underline{${email}}} ~ \\raisebox{-0.1\\height}{\\reflectbox{\\faPhone}}\\ ${phone}
@@ -179,13 +196,7 @@ ${RESUME_STY}
 ${experiencesSection}
 \\resumeSubHeadingListEnd
 
-%-----------PROJECTS-----------
-\\section{\\textcolor{\\accentColor}{Projects}}
-\\vspace{-7pt}
-\\resumeSubHeadingListStart
-${projectsSection}
-\\resumeSubHeadingListEnd
-
+${projects.length ? projectsSection : ""}
 %-----------PROGRAMMING SKILLS-----------
 \\section{\\textcolor{\\accentColor}{Technical Skills}}
 \\begin{itemize}[leftmargin=0.15in, label={}]
@@ -201,4 +212,18 @@ ${projectsSection}
 
 \\end{document}
 `;
+}
+
+// Compiles dir/resume.tex to dir/resume.pdf and returns its page count.
+export async function compileLatex(dir: string, latex: string, timeoutMs = 30_000) {
+  await Bun.write(join(dir, "resume.tex"), latex);
+  const proc = Bun.spawn(["tectonic", "--chatter", "minimal", "--keep-logs", "resume.tex"], { cwd: dir, stderr: "pipe", timeout: timeoutMs });
+  const stderr = await new Response(proc.stderr).text();
+  // Bun sets `killed` on any exit once `timeout` is passed, so only the signal shows a timeout kill.
+  if ((await proc.exited) !== 0) throw new Error(proc.signalCode === "SIGTERM" ? `Tectonic timed out after ${timeoutMs / 1000} s` : stderr);
+
+  const log = await Bun.file(join(dir, "resume.log")).text();
+  const pages = log.match(/^Output written on .*\((\d+) pages?/m)?.[1];
+  if (!pages) throw new Error("Tectonic log has no page count");
+  return Number(pages);
 }

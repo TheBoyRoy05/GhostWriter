@@ -1,12 +1,11 @@
 import { rename, mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import buildPrompt from "./prompt";
-import { buildLatexFromMatcherResult, type MatcherJsonResult } from "./latex";
+import { compileLatex } from "./latex";
+import { tailorResume } from "./select";
 import { openDatabase } from "./db";
 import { readResume, syncResume } from "./resume";
 import { readProfile, writeProfile } from "./profile";
 import { extractFields } from "./extract";
-import { askOpenRouter } from "./openrouter";
 import { addApplication, addStatusEvent, deleteStatusEvent, listApplications, updateApplication } from "./applications";
 
 const ROOT = join(import.meta.dir, "..");
@@ -30,23 +29,23 @@ async function generate(job: string) {
   const profile = readProfile(db);
   if (!profile?.name) throw new Error("Fill in your profile first (Profile button, top right)");
 
-  const options = { maxTokens: 8192, temperature: 0.7 };
-  const result = (await askOpenRouter(buildPrompt(job, resume), options)) as MatcherJsonResult & { company?: string; role?: string };
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error("OPENROUTER_API_KEY not set in .env");
 
-  return {
-    company: result.company ?? "",
-    role: result.role ?? "",
-    latex: buildLatexFromMatcherResult(result, profile, resume, result.role),
-  };
+  const tailored = await tailorResume(db, apiKey, job, resume, profile);
+
+  const bullets = [...tailored.selection.experiences, ...tailored.selection.projects].reduce((n, item) => n + item.bullets.length, 0);
+  console.log(
+    `POST /api/generate questions=${tailored.questions} classified=${tailored.classified} cost=$${tailored.cost.toFixed(6)} bullets=${bullets} dropped=${tailored.dropped} compiles=${tailored.compiles} pages=${tailored.pages}`,
+  );
+  if (tailored.warning) console.warn(`POST /api/generate ${tailored.warning}`);
+  return { company: "", role: "", latex: tailored.latex, warning: tailored.warning };
 }
 
 async function compile(latex: string, company: string, role: string) {
   const dir = join(OUTPUT, slug(`${company}-${role}`));
   await mkdir(dir, { recursive: true });
-  await Bun.write(join(dir, "resume.tex"), latex);
-  const proc = Bun.spawn(["tectonic", "--chatter", "minimal", "resume.tex"], { cwd: dir, stderr: "pipe" });
-  const stderr = await new Response(proc.stderr).text();
-  if ((await proc.exited) !== 0) throw new Error(stderr);
+  await compileLatex(dir, latex);
   return Bun.file(join(dir, "resume.pdf"));
 }
 
