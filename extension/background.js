@@ -1,4 +1,4 @@
-import { pageJob, pastedJob } from "./src/job.js";
+import { findJobPosting, pageJob, pastedJob, textFromHtml } from "./src/job.js";
 
 const SERVER = "http://127.0.0.1:3000";
 const APP = "http://127.0.0.1:5173";
@@ -36,7 +36,7 @@ async function startScrape(input) {
   await chrome.tabs.create({ url: linkedinUrl.replace(/\/?$/, "/"), active: true });
 }
 
-async function applyToPage() {
+async function applyToPage(sendPageAnyway) {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const [{ result }] = await chrome.scripting.executeScript({
     target: { tabId: tab.id },
@@ -45,7 +45,20 @@ async function applyToPage() {
       ldJsonScripts: [...document.querySelectorAll('script[type="application/ld+json"]')].map((s) => s.textContent),
     }),
   });
-  await sendJob(pageJob(tab.url, result.text, result.ldJsonScripts));
+  const jobPosting = findJobPosting(result.ldJsonScripts);
+  let description = "";
+  if (typeof jobPosting?.description === "string") {
+    try {
+      const [converted] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: textFromHtml, args: [jobPosting.description] });
+      description = converted.result;
+    } catch {
+      // Leaving the page between the two injections ends the tab grant; Send Page Anyway is then offered.
+    }
+  }
+
+  const { job, fromPageText } = pageJob(tab.url, result.text, jobPosting, description);
+  if (fromPageText && !sendPageAnyway) return { needsConfirmation: true };
+  await sendJob(job);
 }
 
 async function sendJob(job) {
@@ -97,7 +110,7 @@ async function saveScrape(resume, scrapeTab) {
 
 const handlers = {
   START_SCRAPE: (msg) => startScrape(msg.linkedin),
-  APPLY: () => applyToPage(),
+  APPLY: (msg) => applyToPage(msg.sendPageAnyway),
   SEND_PASTE: (msg) => sendJob(pastedJob(msg.description, msg.link)),
   PAGE_SCRAPED: (msg) => console.log(`[scrape] ${msg.page}: ${msg.entries} entries${msg.spans === undefined ? "" : `, ${msg.spans} spans`}`),
   SCRAPE_COMPLETE: (msg, sender) => saveScrape(msg.data, sender.tab),
@@ -108,7 +121,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   const handler = handlers[msg.type];
   if (!handler) return;
   Promise.resolve(handler(msg, sender))
-    .then(() => sendResponse({ ok: true }))
+    .then((result) => sendResponse({ ok: true, ...result }))
     .catch((err) => {
       console.error(`[${msg.type}]`, err);
       sendResponse({ error: err.message });

@@ -8,12 +8,17 @@
       textarea { height: 96px; resize: vertical; }
       button { border: 0; border-radius: 4px; background: #0a66c2; color: #fff; cursor: pointer; }
       #status { font-size: 12px; }
+      #page-text-warning p { margin: 0 0 8px; font-size: 12px; color: #8a4b00; }
     </style>
   </head>
   <body>
     <input id="linkedin" placeholder="username or profile URL" />
     <button id="scrape">Scrape LinkedIn Profile</button>
     <button id="apply">Apply to This Job Page</button>
+    <div id="page-text-warning" role="alert" hidden>
+      <p>This page has no structured job description, so its text may include unrelated content, reducing resume quality. Paste the description directly for better accuracy.</p>
+      <button id="send-page">Send Page Anyway</button>
+    </div>
     <textarea id="description" placeholder="or paste a job description"></textarea>
     <input id="link" placeholder="job link (optional)" />
     <button id="paste">Apply to Pasted Job</button>
