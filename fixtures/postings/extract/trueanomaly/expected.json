@@ -1,0 +1,20 @@
+{
+  "loose": [
+    "company",
+    "position_title",
+    "location"
+  ],
+  "fields": {
+    "company": "True Anomaly",
+    "position_title": "Software Engineer I, Full Stack (New Grad)",
+    "pay_low": 75000,
+    "pay_high": 80000,
+    "pay_unit": null,
+    "location": "Denver, CO; Long Beach, CA",
+    "req_id": null,
+    "deadline": null,
+    "cover_letter": "optional"
+  },
+  "jsonLdStates": [],
+  "notes": "pay_unit is null on purpose: the page states a dollar range with no unit."
+}

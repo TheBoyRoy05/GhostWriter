@@ -1,0 +1,52 @@
+https://nvidia.wd5.myworkdayjobs.com/en-US/nvidiaexternalcareersite/job/US-CA-Santa-Clara/C---Software-Engineer--Infrastructure-Tools---New-College-Grad-2027_JR2027431
+C++ Software Engineer, Infrastructure Tools - New College Grad 2027
+
+NVIDIA has continuously reinvented itself over two decades. Our invention of the GPU in 1999 fueled the growth of the PC gaming market, redefined modern computer graphics, and revolutionized parallel computing. More recently, GPU deep learning ignited modern AI — the next era of computing. NVIDIA is a “learning machine” that constantly evolves by adapting to new challenges that are hard to tackle, that only we can pursue, and that matter to the world. This is our life’s work, to amplify human creativity and intelligence. Make the choice to join us today!
+Our team is responsible for development and management of tooling and release infrastructure for chip designers. We are constantly evolving to meet the demands of newer design architectures while maintaining backward compatibility and keeping tools reliable and scalable.
+
+What You'll be Doing:
+
+- Research, develop and maintain high quality tooling for scalable build/regression/release infrastructure that our chip designers rely on every day.
+
+- Develop user facing services that enable them to quickly schedule, track and triage their flows.
+
+- Develop internal tools to collect, analyze, monitor and visualize key metrics of the build and deployment systems.
+
+- Research and adapt the latest CI/CD practices to constantly evolve the tools & meet industry standards.
+
+What We Need to See:
+
+- Bachelor's degree or higher in Computer Science or Computer Engineering (or equivalent experience).
+
+- Experienced in a compiled language(C++/Golang) & scripting(Python/Perl/Tcl).
+
+- Experience in writing good production quality code.
+
+- Solid understanding of data structure, algorithms, computer architecture and computer science theory.
+
+- Flexibility/adaptability for working in a global and wide-ranging environment with different frameworks and requirements.
+
+Ways to stand out from the crowd:
+
+- Interest or experience in AI/ML & developing agentic workflows
+
+- Proficiency in SCM (e.g. Git, Perforce) and build systems (e.g. Make, CMake, makepp, Bazel)
+
+- Experienced with full stack development.
+
+- Proficiency in C++ linter, memory check, performance profiling, and code coverage tools.
+
+- Experienced with distributed computing systems such as LSF
+
+NVIDIA is widely considered one of the technology world’s most desirable employers. We employ some of the most forward-thinking and talented people in the world. Are you passionate about joining our life work to amplify human imagination and intelligence? If you are creative, collaborative, and have a real passion for design methodology and automation, we want to hear from you.
+
+#LI-Hybrid
+
+Your base salary will be determined based on your location, experience, and the pay of employees in similar positions. The base salary range is 108,000 USD - 178,250 USD for Level 1, and 124,000 USD - 195,500 USD for Level 2.
+You will also be eligible for equity and benefits.
+
+Applications for this job will be accepted at least until October 13, 2026.
+This posting is for an existing vacancy. 
+NVIDIA uses AI tools in its recruiting processes.
+
+NVIDIA is committed to fostering an inclusive work environment and proud to be an equal opportunity employer. As we highly value diversity in our current and future employees, we do not discriminate (including in our hiring and promotion practices) on the basis of race, religion, color, national origin, gender, gender expression, sexual orientation, age, marital status, veteran status, disability status or any other characteristic protected by law.

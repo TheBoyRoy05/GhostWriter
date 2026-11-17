@@ -1,0 +1,69 @@
+https://job-boards.greenhouse.io/purestorage/jobs/8249851
+Software Engineer Grad 2027
+
+Everpure (NYSE: P) has evolved from storage pioneer to data platform, closing fiscal 2026 with $3.7 billion in revenue, its first billion-dollar quarter, and accelerating growth into FY27. Our strategic agenda spans the companies defining the next era of technology - hyperscalers, AI labs, the AI hardware supply chain, data platform providers, and the broader AI ecosystem.
+
+This type of work—work that changes the world—is what the tech industry was founded on. So, if you're ready to seize the endless opportunities and leave your mark, come join us.
+
+THE ROLE
+
+As a Software Engineer Grad, you will be part of a team that's building the future of data storage and management. You’ll apply your foundational knowledge to tackle challenging, real-world problems from low-level hardware to large-scale cloud systems. This role is a unique opportunity to directly contribute to mission-critical features that ensure our customers have a seamless, high-performance, and reliable data experience.
+
+WHAT YOU'LL DO
+
+- Contribute to core product development: Take ownership of key tasks within the software development lifecycle, from ideation and design to implementation and testing.
+
+- Innovate and solve complex problems: Research and develop solutions for challenges related to data efficiency, such as optimizing data deduplication and reclamation, or improving replication across wide-area networks.
+
+- Enhance system performance and scalability: Work on projects that improve the performance of our software, ensuring it scales effectively with ever-increasing data volumes and hardware capabilities.
+
+- Collaborate across teams: Partner with senior engineers and cross-functional teams to integrate new features and maintain a high standard of code quality through extensive automated testing.
+
+- We are primarily an in-office environment and therefore, you will be expected to work from the Santa Clara, CA office in compliance with Everpure's policies, unless you are on PTO, or work travel, or other approved leave
+
+WHAT YOU BRING
+
+- Strong computer science fundamentals: A solid understanding of data structures, algorithms, concurrency, and design principles. You can apply these concepts to solve practical engineering problems.
+
+- Proficiency in C++: You're comfortable writing clean, efficient, and well-structured code in C++.
+
+- Problem-solving aptitude: A proactive and self-motivated approach to identifying and solving complex problems with a focus on delivering high-quality, impactful results.
+
+- Collaboration and communication skills: The ability to articulate complex technical ideas clearly and work effectively in a team-based, open office environment.
+
+#LI-ONSITE
+
+Salary ranges are determined based on role, level and location. For positions open to candidates in multiple geographical locations, the base salary range is reflective of the labor market across the applicable locations. 
+
+This role may be eligible for incentive pay and/or equity. 
+
+There is no application deadline and we accept applications on an ongoing basis until the job is filled.
+
+The annual base salary range is: 
+$122,000—$183,000 USD
+
+WHAT YOU CAN EXPECT FROM US:
+
+- Innovation: We celebrate those who think critically, like a challenge, and aspire to be trailblazers.
+
+- Growth: We give you the space and support to grow along with us and to contribute to something meaningful. We have been named Fortune's Best Workplaces in Technology™, Fortune's Best Workplaces in the Bay Area™, and certified as a Great Place to Work®!
+
+- Team: We build each other up and set aside ego for the greater good.
+
+And because we understand the value of bringing your full and best self to work, we offer a variety of perks to manage a healthy balance, including flexible time off, wellness resources, and company-sponsored team events. Check out http://benefits.everpuredata.com/ for more information.
+
+ACCOMMODATIONS AND ACCESSIBILITY:
+
+Candidates with disabilities may request accommodations for all aspects of our hiring process. For more on this, contact us at TA-Ops@purestorage.com if you’re invited to an interview.
+
+OUR COMMITMENT TO A STRONG AND INCLUSIVE TEAM:
+
+We’re forging a future where everyone finds their rightful place and where every voice matters. Where uniqueness isn’t just accepted but embraced. That’s why we are committed to fostering the growth and development of every person, cultivating a sense of community through our Employee Resource Groups and advocating for inclusive leadership.
+
+Everpure is proud to be an equal opportunity employer. We do not discriminate based upon race, religion, color, national origin, sex (including pregnancy, childbirth, or related medical conditions), sexual orientation, gender, gender identity, gender expression, transgender status, sexual stereotypes, age, status as a protected veteran, status as an individual with a disability, or any other characteristic legally protected by the laws of the jurisdiction in which you are being considered for hire.
+
+Join us and bring your best.
+
+Bring your bold.
+
+Pure and simple.

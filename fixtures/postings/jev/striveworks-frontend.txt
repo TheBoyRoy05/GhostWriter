@@ -1,0 +1,86 @@
+https://job-boards.greenhouse.io/striveworks/jobs/8002598003
+Junior Front-End Engineer
+
+“In 36 months, agentic AI systems will be an operating reality across major institutions. We intend to be central to it.” — Dr. Jim Rebesco, Cofounder and CEO, Striveworks 
+
+The government’s demand for AI is growing far faster than the systems required to support it. Fewer than 15% of federal AI programs have reached sustained production, despite billions of dollars invested. The models perform in testing, but they degrade in the real world. And when performance drops, trust goes with it.
+
+Striveworks was built to solve that problem.
+
+What you’ll build
+
+Since 2018, we have delivered the most trusted AI systems operating in real-world use cases—providing a layer of assurance underneath hundreds of deployed models that monitors performance, manages drift, and sustains systems long after they leave the lab.
+
+As a Junior Front-End Engineer, you’ll play an active role in designing and implementing UI/UX components for our core products. You’ll work closely with a team of UX designers, data scientists, and software engineers to solve complex problems—making this an ideal environment to accelerate your technical growth while delivering high-impact solutions for our users.
+
+What it’s like here
+
+We lead with trust, treat each other with respect, and use candor consistently, kindly, and constructively. We care deeply about our work, and we find genuine satisfaction in doing it well. Above all, we take ownership—because we feel the weight of collective results personally. We are looking for people who share these values and are eager to put them into practice.
+
+What we’re looking for
+
+- A bachelor’s degree in computer science or another engineering or science discipline, or completion of a software development boot camp and 0–2 years of relevant professional experience
+
+- Strong proficiency in TypeScript and modern JavaScript, with a solid understanding of language fundamentals, asynchronous programming, and modern front-end development practices
+
+- Familiarity with UI/UX, knowledge of design patterns, and experience designing and styling applications with CSS
+
+- Experience building web applications with React through professional, academic, or personal projects
+
+- Experience working with REST APIs and integrating back-end services into front-end applications
+
+- Experience with Git and modern software development workflows
+
+- Familiarity with component frameworks like Material UI or similar frameworks
+
+- Strong problem-solving skills, curiosity, and an eagerness to learn
+
+- US citizenship and eligibility and willingness to obtain and maintain a US security clearance (Secret or above)
+
+The following isn’t required, but we’d love to see it:
+
+- Demonstrated software development through personal, academic, or open source projects
+
+- Experience with GraphQL, Next.js, Node.js
+
+- Familiarity with libraries such as React Query/TanStack, Axios, Context API, styled-components
+
+- Exposure to cloud environments (AWS, GCP, Azure), automated testing frameworks, and/or CI/CD processes
+
+- Familiarity with Python or Golang
+
+- Experience implementing and deploying software in containerized or cloud environments, using tools such as Docker, Podman, or Kubernetes (K8s)
+
+- Passion for discussing and creating mocks in Figma; working directly with design to create the best user experience
+
+- Active Secret (or above) US security clearance
+
+This position offers a hybrid/on-site work environment at our office in Austin, TX.
+
+Compensation
+
+The anticipated base pay range for this position is $100,000–$130,000/year. Striveworks’ total compensation package includes a competitive base salary, equity grants, and cash bonuses.
+
+Benefits include:
+
+- Medical/dental/vision insurance
+
+- Voluntary life, long-term disability, accident, and hospital indemnity insurance
+
+- HSA and FSA (including dependent care FSA) plans
+
+- 401(k) plan
+
+- Unlimited PTO
+
+- Paid parental leave
+
+Ready to build systems that work for a mission that matters? Let’s talk.
+
+Striveworks is an Equal Opportunity Employer and does not discriminate in employment on the basis of race, color, religion, belief, sex (including pregnancy and gender identity or expression), national origin, social or ethnic origin, political affiliation, sexual orientation, marital status, disability, genetic information, age, membership in an employee organization, retaliation, parental status, military service, or other non-merit factors. Striveworks will not tolerate discrimination or harassment of any kind.
+
+If you require assistance or a reasonable accommodation in the application process, please contact People Operations at hr@striveworks.us.
+
+In compliance with federal law, all persons hired will be required to verify their identity and eligibility to work in the United States and to complete an employment eligibility verification form upon hire.
+
+Striveworks is a participating employer in the E-Verify program.

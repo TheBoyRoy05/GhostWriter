@@ -1,0 +1,53 @@
+https://www.amazon.jobs/en/jobs/10568315
+Software Dev Engineer, AWS ECS
+
+Description
+We’re on the lookout for the curious, those who think big and want to define the world of tomorrow. At Amazon, you will grow into the high impact, person you know you’re ready to be. Every day will be filled with exciting new challenges, developing new skills, and achieving personal growth. How often can you say that your work changes the world? At Amazon, you’ll say it often. Join us and define tomorrow.
+Do you want to solve business challenges through innovative technology? Do you enjoy working on scalable services technology in a team environment? Do you like working on industry-defining projects that move the needle?
+At Amazon, we hire the best minds in technology to innovate and build on behalf of our customers. The focus we have on our customers is why we are one of the world’s most beloved brands – customer obsession is part of our company DNA. Our Software Development Engineers (SDEs) use latest technology to solve complex problems and get to see the impact of their work first-hand.
+
+Key job responsibilities
+• Collaborate with experienced cross-disciplinary Amazonians to conceive, design, and bring innovative products and services to market.
+• Design and build innovative technologies in a large distributed computing environment and help lead fundamental changes in the industry.
+• Create solutions to run predictions on distributed systems with exposure to innovative technologies at incredible scale and speed.
+• Build distributed storage, index, and query systems that are scalable, fault-tolerant, low cost, and easy to manage/use.
+• Design and code the right solutions starting with broadly defined problems.
+• Work in an agile environment to deliver high-quality software.
+
+A day in the life
+The challenges SDEs solve for at Amazon are big and influence millions of customers, sellers, and products around the world. We are looking for individuals who are passionate about creating new products, features, and services from scratch while managing ambiguity and the pace of a company where development cycles are measured in weeks, not years.
+
+About the team
+AWS Serverless Compute is changing the way customers build in the cloud — enabling scalable, fault-tolerant applications without managing infrastructure. Amazon Elastic Container Service (ECS) is AWS's fully managed container orchestration service within this portfolio, running millions of containers daily across Fargate, EC2, and Managed Instances, solving hard problems in distributed systems, security, and performance at massive scale.
+
+Basic Qualifications
+- Experience programming with at least one software programming language
+- 1+ years of non-internship professional software development experience
+- 2+ years of building complex software systems experience
+
+Preferred Qualifications
+- Bachelor's degree in computer science or equivalent
+
+Amazon is an equal opportunity employer and does not discriminate on the basis of protected veteran status, disability, or other legally protected status.
+
+Our inclusive culture empowers Amazonians to deliver the best results for our customers. If you have a disability and need a workplace accommodation or adjustment during the application and hiring process, including support for the interview or onboarding process, please visit https://amazon.jobs/content/en/how-we-hire/accommodations for more information. If the country/region you’re applying in isn’t listed, please contact your Recruiting Partner.
+
+The base salary range for this position is listed below. Your Amazon package will include sign-on payments and restricted stock units (RSUs). Final compensation will be determined based on factors including experience, qualifications, and location. Amazon also offers comprehensive benefits including health insurance (medical, dental, vision, prescription, Basic Life & AD&D insurance and option for Supplemental life plans, EAP, Mental Health Support, Medical Advice Line, Flexible Spending Accounts, Adoption and Surrogacy Reimbursement coverage), 401(k) matching, paid time off, and parental leave. Learn more about our benefits at https://amazon.jobs/en/benefits.
+
+USA, WA, Seattle - 143,700.00 - 194,400.00 USD annually
+
+JOIN US ON
+
+- 
+
+- 
+
+- 
+
+- 
+
+DOWNLOAD OUR APP
+
+- 
+
+-

@@ -1,0 +1,25 @@
+{
+  "loose": [
+    "company",
+    "position_title",
+    "location"
+  ],
+  "fields": {
+    "company": "Leidos",
+    "position_title": "Software Engineer TS/SCI Poly",
+    "pay_low": 57850,
+    "pay_high": 104575,
+    "pay_unit": null,
+    "location": "Annapolis Junction, MD",
+    "req_id": "R-00179080",
+    "deadline": null,
+    "cover_letter": null
+  },
+  "jsonLdStates": [
+    "company",
+    "position_title",
+    "location",
+    "req_id"
+  ],
+  "notes": "location comes from JSON-LD and the URL slug, not the page text. pay_unit is null on purpose: the page states a dollar range with no unit."
+}

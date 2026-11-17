@@ -1,0 +1,24 @@
+{
+  "loose": [
+    "company",
+    "position_title",
+    "location"
+  ],
+  "fields": {
+    "company": "Qualcomm",
+    "position_title": "Machine Learning Engineer - College Graduate",
+    "pay_low": 122800,
+    "pay_high": 184200,
+    "pay_unit": null,
+    "location": "San Diego, CA",
+    "req_id": null,
+    "deadline": null,
+    "cover_letter": null
+  },
+  "jsonLdStates": [
+    "company",
+    "position_title",
+    "location"
+  ],
+  "notes": "location comes from JSON-LD, not the page text. pay_unit is null on purpose: the page states a dollar range with no unit."
+}

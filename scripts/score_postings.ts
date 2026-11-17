@@ -1,5 +1,5 @@
 // Scores every resume bullet against each saved posting with Jev, to check the ranking before building on it.
-// Usage: bun scripts/score_postings.ts [posting-file ...]   (defaults to every file in data/postings/)
+// Usage: bun scripts/score_postings.ts [posting-file ...]   (defaults to every file in fixtures/postings/jev/)
 import { readdirSync } from "node:fs";
 import { basename, join } from "node:path";
 import { openDatabase } from "../server/db";
@@ -7,7 +7,7 @@ import { RELEVANCE_LEVELS, scoreQuestions } from "../server/jev";
 import { bulletQuestion } from "../server/select";
 
 const ROOT = join(import.meta.dir, "..");
-const POSTINGS = join(ROOT, "data/postings");
+const POSTINGS = join(ROOT, "fixtures/postings/jev");
 const SCORES = join(ROOT, "data/scores");
 
 type Bullet = { key: string; kind: string; sourceId: string; index: number; item: string; text: string };

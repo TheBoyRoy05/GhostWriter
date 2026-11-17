@@ -1,0 +1,20 @@
+{
+  "loose": [
+    "company",
+    "position_title",
+    "location"
+  ],
+  "fields": {
+    "company": "Aquatic Capital Management",
+    "position_title": "Software Engineer, Early Career",
+    "pay_low": 150000,
+    "pay_high": 200000,
+    "pay_unit": null,
+    "location": "Chicago; New York",
+    "req_id": null,
+    "deadline": null,
+    "cover_letter": null
+  },
+  "jsonLdStates": [],
+  "notes": "pay_unit is null on purpose: the page states a dollar range with no unit."
+}

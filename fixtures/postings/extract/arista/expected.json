@@ -1,0 +1,19 @@
+{
+  "loose": [
+    "company",
+    "position_title",
+    "location"
+  ],
+  "fields": {
+    "company": "Arista Networks",
+    "position_title": "Software Engineer, Network Systems",
+    "pay_low": null,
+    "pay_high": null,
+    "pay_unit": null,
+    "location": "Nashua, NH",
+    "req_id": null,
+    "deadline": null,
+    "cover_letter": null
+  },
+  "jsonLdStates": []
+}

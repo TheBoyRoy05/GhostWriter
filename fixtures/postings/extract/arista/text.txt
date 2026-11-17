@@ -1,0 +1,83 @@
+https://jobs.smartrecruiters.com/AristaNetworks/744000136204119
+
+Software Engineer, Network Systems
+Full-time
+Company Description
+
+Arista Networks is an industry leader in data-driven, client-to-cloud networking for large data center, campus and routing environments. What sets us apart is our relentless pursuit of innovation. We leverage the latest advancements in cloud computing, artificial intelligence, and software-defined networking to provide our clients with a competitive edge in an increasingly interconnected world. Our solutions are designed to not only meet the current demands of the digital landscape but to also anticipate and adapt to future challenges.
+
+At Arista we value the diversity of thought and perspectives that each employee brings to the table. We  believe that fostering an inclusive environment, where individuals from various backgrounds and experiences feel welcome, is essential for driving creativity and innovation.
+
+Our commitment to excellence has earned us several prestigious awards, such as Best Engineering Team, Best Company for Diversity, Compensation, and Work-Life Balance. At Arista, we take pride in our track record of success and strive to maintain the highest standards of quality and performance in everything we do.
+
+Job Description
+
+Who You’ll Work With
+
+Arista Networks is looking for world-class Network Systems software engineers.
+
+Network systems software is all about managing hardware components on switches and routers. As a software engineer in the Network Systems group, you will collaborate with hardware engineers to design and build novel features that help Arista hardware run effectively and efficiently. You will write software that controls  everything from temperature sensors, fan controllers, power controllers, storage devices to FPGAs, NICs and PCIE switches. You will design abstractions that allow this software to be easily packaged and integrated into hardware drivers that manage all our hardware. You will also get to work closely with our hardware engineers throughout the lifecycle of our products - ranging from influencing hardware designs for ease of software control, to bringing up brand new hardware and taking it through the development cycle to market.
+
+Arista Software Engineering roles demand a strong and broad software engineering background. While the primary focus area for this role is Network Systems software, the role will cover all aspects of software development spanning the addition of new features, debugging problems and fine tuning code for scalability and performance. You will own your projects from definition to deployment and customer interactions, and you will be responsible for the quality of everything you deliver. 
+
+Arista Software Engineering prides itself on a supportive and growth oriented culture. Over time, as your interests change, coupled with evolving business needs you will have the opportunity to switch from packet forwarding to other areas, if you like. 
+ 
+
+What You’ll Do
+
+Develop and maintain features using C, C++ and Python, review and contribute to functional and design specifications. Build automated tests and test infrastructure to test the features.
+Work with hardware and manufacturing teams to bring new hardware to market.
+Collaborate with hardware engineers to design optimal software control interfaces for managing hardware components.
+Work with Customer Support Engineers and customers to analyze, mitigate and fix problems in customer networks.
+Work with the System Test Engineers to analyze problems found in their tests and provide fixes for those problems.
+Mentor new and junior engineers to bring them up to speed in Arista's software development environment.
+Qualifications
+BS Computer Science/Electrical Engineering/Computer Engineering + 3 years experience, or MS Computer Science/Electrical Engineering/Computer Engineering + 2 year experience, or Ph.D. in Computer Science/Electrical Engineering/Computer Engineering +1 year experience, or equivalent work experience
+Knowledge of C or C++ and Python.
+Knowledge of UNIX or Linux
+Experience working with low level hardware components
+Understanding of IP networking and/or distributed systems is a plus
+Applied understanding of software engineering principles
+Strong problem solving and software troubleshooting skills
+Ability to design a solution and implement features independently. 
+Ability to work in small teams.
+
+#LI-SP1
+
+Additional Information
+
+Arista Networks is an equal opportunity employer.  Arista makes all hiring and employment-related decisions in a non-discriminatory manner without regard to race, color, religion, sex, sexual orientation, gender identity, national origin or any other factor determined to be unlawful under applicable federal, state, or law law.  All your information will be kept confidential according to EEO guidelines.
+
+By clicking the link above or any third-party link within this posting, you are leaving this site and going to a third-party website where the third-party website's terms and privacy policy apply
+
+I'm interested
+Privacy Notice
+Cookies Settings
+I'm interested
+	
+
+Posted by
+
+Sadiya Hussain
+SHARE THIS JOB
+OTHER JOBS AT ARISTA NETWORKS
+
+Major Account Manager (Financial Vertical)
+
+Pittsburgh, PA
+
+ECAD Engineer
+
+Bengaluru, India
+
+Senior PCB Design Engineer
+
+Santa Clara, CA
+
+Show all jobs
+
+Software Engineer, Network Systems
+
+Nashua, NH, USA
+Full-time
+I'm interested

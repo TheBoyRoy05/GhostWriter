@@ -1,4 +1,4 @@
-const MODEL = process.env.OPENROUTER_MODEL ?? "arcee-ai/trinity-large-preview:free";
+const MODEL = process.env.OPENROUTER_MODEL ?? "nvidia/nemotron-3.5-lightning:free";
 
 type Options = { maxTokens: number; temperature: number; signal?: AbortSignal };
 
@@ -6,7 +6,7 @@ export async function askOpenRouter(prompt: string, { maxTokens, temperature, si
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY not set in .env");
 
-  const body = { model: MODEL, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens, temperature };
+  const body = { model: MODEL, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens, temperature, reasoning: { enabled: false } };
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
